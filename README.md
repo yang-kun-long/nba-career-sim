@@ -4,6 +4,24 @@
 
 项目已经迁移到 Vue 3 + Vite + Pinia，旧版静态实现保留在 `legacy.html`、`js/` 和 `css/` 中，作为迁移期间的对照与回退版本。
 
+## 项目来源与迁移
+
+本仓库基于 [bushenghan22/nba-career-sim](https://github.com/bushenghan22/nba-career-sim) 的静态 HTML/CSS/JavaScript 项目进行 Vue 架构迁移。原始实现由 GitHub 用户 [bushenghan22](https://github.com/bushenghan22) 发布，迁移所依据的代码可追溯至原仓库提交 [`14b5af6`](https://github.com/bushenghan22/nba-career-sim/commit/14b5af609a58b799554e68016940e95ef8d09dfa)。
+
+当前仓库是迁移时重新初始化的 Git 仓库，因此 GitHub 页面不会将其显示为 fork；这不改变原项目的作者归属。原始文件按原貌保存在：
+
+- `legacy.html`：对应原项目的 `index.html`
+- `js/`：原版游戏逻辑
+- `css/`：原版页面样式
+
+在此基础上，当前版本完成了 Vue 3 组件化、Pinia 状态管理、存档兼容、自动化测试、CI/CD 和 Cloudflare Pages 部署。
+
+## 许可与版权
+
+截至 2026-09-01，原项目仓库未包含 `LICENSE`、`COPYING` 或其他明确的开源许可。因此，本仓库不能代替原作者将继承代码声明为 MIT、Apache-2.0 等开源许可证，当前 npm 许可状态标记为 `UNLICENSED`。
+
+原始静态实现的权利归原作者所有；Vue 迁移及后续修改由本仓库贡献者维护。复制、再分发、再许可或商业使用前，应先取得相应权利人的许可。完整说明见 [LICENSE](LICENSE)。
+
 ## 技术栈
 
 - Vue 3：页面组件和响应式视图
@@ -83,4 +101,3 @@ wrangler.toml       Cloudflare Pages 配置
 npm run build
 npx wrangler pages deploy dist --project-name nba-career-sim --branch main
 ```
-

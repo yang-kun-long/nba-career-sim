@@ -1,0 +1,27 @@
+Copyright and Attribution Notice
+
+This repository is not currently offered under an open-source license.
+
+Original static implementation
+Copyright (c) 2026 bushenghan22
+Source: https://github.com/bushenghan22/nba-career-sim
+Reference commit: 14b5af609a58b799554e68016940e95ef8d09dfa
+
+The original repository did not contain a LICENSE, COPYING, or other explicit
+license grant when this notice was added on 2026-09-01. The original portions
+of this project therefore remain subject to copyright protection and to any
+permissions granted directly by their copyright holder.
+
+Vue migration and subsequent changes
+Copyright (c) 2026 yang-kun-long and contributors
+
+The Vue 3, Vite, and Pinia migration and later repository-specific changes are
+separate contributions, but this notice does not grant a license to the
+combined work or override rights in the original implementation.
+
+The original static implementation is retained in legacy.html, js/, and css/.
+The current Vue implementation remains a derivative work of that source.
+
+Obtain permission from the applicable copyright holders before copying,
+redistributing, sublicensing, or using this repository commercially beyond
+what is otherwise permitted by law.
