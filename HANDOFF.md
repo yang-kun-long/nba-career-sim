@@ -1,6 +1,6 @@
 # 项目交接文档
 
-更新时间：2026-08-31
+更新时间：2026-09-01
 
 ## 项目概况
 
@@ -11,7 +11,7 @@
 当前线上地址：
 
 - Cloudflare Pages：https://nba-career-sim.pages.dev/
-- 最近一次不可变部署：https://c37cc7d9.nba-career-sim.pages.dev
+- 最近一次不可变部署：https://5416e469.nba-career-sim.pages.dev
 
 GitHub 仓库：
 
@@ -99,7 +99,7 @@ b29594c feat: migrate NBA career simulator to Vue and add CI/CD
 
 最近一次完整成功运行：
 
-- https://github.com/yang-kun-long/nba-career-sim/actions/runs/33404536701
+- https://github.com/yang-kun-long/nba-career-sim/actions/runs/33413069821
 - Verify：成功
 - Deploy Cloudflare Pages：成功
 
