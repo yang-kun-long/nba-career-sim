@@ -2,11 +2,12 @@ import { test, expect } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => {
-    localStorage.removeItem('nba_career_save');
-    localStorage.removeItem('nba_career_endings');
-  });
+  await page.evaluate(() => localStorage.clear());
   await page.reload();
+});
+
+test.afterEach(async ({ page }) => {
+  await page.evaluate(() => localStorage.clear());
 });
 
 test('creates a player, preserves the name during allocation, and restores a saved event', async ({ page }) => {
