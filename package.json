@@ -1,0 +1,23 @@
+{
+  "name": "nba-career-sim",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "pinia": "^2.3.1",
+    "vue": "^3.5.18"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "vite": "^7.1.3",
+    "vitest": "^4.1.11"
+  }
+}

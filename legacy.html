@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>NBA 终身篮球生涯模拟器</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <!-- 标题屏幕 -->
+  <div id="screen-title" class="screen active">
+    <div class="title-box">
+      <div class="nba-logo">🏀</div>
+      <h1>NBA 终身篮球生涯模拟器</h1>
+      <p class="subtitle">纯文字 · 回合制 · 从少年到传奇</p>
+      <div class="menu">
+        <button onclick="App.newGame()">新游戏</button>
+        <button onclick="App.loadGame()" id="btn-continue" style="display:none">继续游戏</button>
+        <button onclick="App.showGallery()">结局图鉴</button>
+      </div>
+      <p class="hint">每一个选择，决定你的一生</p>
+    </div>
+  </div>
+
+  <!-- 角色创建 -->
+  <div id="screen-create" class="screen">
+    <div class="panel">
+      <h2>创建你的球员</h2>
+      <p class="create-desc">你今年 12 岁，怀揣篮球梦想。分配 50 点属性，开启你的篮球人生。<br><span style="color:var(--accent2)">最少使用 25 点即可开始，用的越少难度越大，但也更容易解锁特殊结局！</span></p>
+      <div id="attr-alloc" class="attr-alloc"></div>
+      <div class="point-bar">
+        <span>剩余点数：<strong id="remain-points">50</strong> / 50（最少用25点）</span>
+      </div>
+      <div class="create-name">
+        <label>球员姓名：</label>
+        <input type="text" id="player-name" placeholder="输入你的名字" maxlength="12">
+      </div>
+      <div class="create-actions">
+        <button onclick="App.confirmCreate()" id="btn-start" disabled>确认开始</button>
+        <button onclick="App.randomAlloc()">随机分配</button>
+        <button onclick="App.resetAlloc()">重置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主游戏界面 -->
+  <div id="screen-game" class="screen">
+    <div class="game-header">
+      <div class="hud">
+        <span id="hud-name"></span>
+        <span id="hud-age"></span>
+        <span id="hud-team"></span>
+        <span id="hud-salary"></span>
+      </div>
+      <div class="hud-btns">
+        <button onclick="App.showStats()" class="btn-sm">数据</button>
+        <button onclick="App.showHistory()" class="btn-sm">事件</button>
+        <button onclick="App.saveGame()" class="btn-sm">存档</button>
+        <button onclick="App.showAttrMini()" class="btn-sm">属性</button>
+        <button onclick="App.confirmRetire()" class="btn-sm btn-danger" id="btn-retire" style="display:none">退役</button>
+      </div>
+    </div>
+    <div class="game-body">
+      <div id="event-area" class="event-area">
+        <div id="event-title" class="event-title"></div>
+        <div id="event-text" class="event-text"></div>
+        <div id="event-choices" class="event-choices"></div>
+        <div id="event-result" class="event-result" style="display:none"></div>
+        <div id="event-next" style="display:none">
+          <button onclick="App.nextYear()">继续下一年</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 选秀之夜 -->
+  <div id="screen-draft" class="screen">
+    <div class="panel draft-panel">
+      <h2>NBA 选秀之夜</h2>
+      <div id="draft-info" class="draft-info"></div>
+      <div id="draft-result" class="draft-result"></div>
+      <div id="draft-next" style="display:none">
+        <button onclick="App.afterDraft()">开启 NBA 生涯</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 生涯数据面板 -->
+  <div id="screen-stats" class="screen">
+    <div class="panel">
+      <h2>生涯数据</h2>
+      <div id="stats-content" class="stats-content"></div>
+      <button onclick="App.backToGame()">返回</button>
+    </div>
+  </div>
+
+  <!-- 属性面板（游戏中查看） -->
+  <div id="screen-attr" class="screen">
+    <div class="panel">
+      <h2>当前属性</h2>
+      <div id="attr-display" class="attr-display"></div>
+      <div id="hidden-display" class="hidden-display"></div>
+      <button onclick="App.backToGame()">返回</button>
+    </div>
+  </div>
+
+  <!-- 结局画面 -->
+  <div id="screen-ending" class="screen">
+    <div class="panel ending-panel">
+      <h2 id="ending-title"></h2>
+      <div id="ending-text" class="ending-text"></div>
+      <div id="ending-stats" class="ending-stats"></div>
+      <div class="ending-actions">
+        <button onclick="App.generateCareerImage()">生成生涯简图</button>
+        <button onclick="App.showGallery()">查看图鉴</button>
+        <button onclick="App.backToTitle()">返回主菜单</button>
+      </div>
+      <canvas id="career-canvas" style="display:none"></canvas>
+      <div id="career-image-result" style="display:none;margin-top:16px;text-align:center">
+        <img id="career-image" style="max-width:100%;border:1px solid var(--border)">
+        <br><button onclick="App.downloadCareerImage()" style="margin-top:8px">保存图片</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结局图鉴 -->
+  <div id="screen-gallery" class="screen">
+    <div class="panel">
+      <h2>结局图鉴</h2>
+      <div id="gallery-tabs" class="gallery-tabs">
+        <button class="tab active" data-cat="all" onclick="App.filterGallery('all')">全部</button>
+        <button class="tab" data-cat="legend" onclick="App.filterGallery('legend')">传奇</button>
+        <button class="tab" data-cat="quality" onclick="App.filterGallery('quality')">优质</button>
+        <button class="tab" data-cat="normal" onclick="App.filterGallery('normal')">普通</button>
+        <button class="tab" data-cat="tragedy" onclick="App.filterGallery('tragedy')">遗憾</button>
+        <button class="tab" data-cat="retire" onclick="App.filterGallery('retire')">转型</button>
+      </div>
+      <div id="gallery-list" class="gallery-list"></div>
+      <button onclick="App.backToTitle()">返回主菜单</button>
+    </div>
+  </div>
+
+  <!-- 退役确认 -->
+  <div id="screen-retire-confirm" class="screen">
+    <div class="panel">
+      <h2>退役确认</h2>
+      <p id="retire-msg">你确定要在这个时间点退役吗？</p>
+      <div class="retire-actions">
+        <button onclick="App.doRetire()">确认退役</button>
+        <button onclick="App.backToGame()">继续打球</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 事件历史 -->
+  <div id="screen-history" class="screen">
+    <div class="panel">
+      <h2>📜 生涯事件记录</h2>
+      <div id="history-content" class="history-panel"></div>
+      <button onclick="App.backToGame()" style="margin-top:16px">返回</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/teams.js"></script>
+<script src="js/events.js"></script>
+<script src="js/endings.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
