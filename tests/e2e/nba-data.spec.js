@@ -48,3 +48,19 @@ test('provides a usable overview, official leaders, and season archive tables', 
   const widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: window.innerWidth }));
   expect(widths.body).toBe(widths.viewport);
 });
+
+test('opens a team dashboard with history and roster data', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'NBA 数据中心' }).click();
+  await page.getByRole('button', { name: '球队', exact: true }).click();
+  const lakers = page.locator('.team-card-clickable').filter({ hasText: 'Los Angeles Lakers' }).first();
+  await expect(lakers).toBeVisible();
+  await lakers.click();
+  await expect(page.locator('.team-dashboard')).toBeVisible();
+  await expect(page.locator('.team-dashboard h3')).toHaveText('Los Angeles Lakers');
+  await expect(page.locator('.team-history-table tbody tr')).toHaveCount(16);
+  await expect(page.locator('.team-roster-table tbody tr').first()).toBeVisible();
+  const widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: window.innerWidth }));
+  expect(widths.body).toBe(widths.viewport);
+});

@@ -1813,12 +1813,16 @@ button:disabled:hover {
 
 .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .team-card { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.team-card-clickable { cursor: pointer; transition: border-color .2s, background .2s, transform .2s; }
+.team-card-clickable:hover { border-color: var(--accent); background: rgba(245, 132, 38, .08); transform: translateY(-2px); }
+.team-card-clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .team-mark { width: 44px; height: 44px; display: grid; place-items: center; flex-shrink: 0; color: #fff; font-family: 'Orbitron', sans-serif; font-size: 0.66rem; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,.35); }
 .team-copy { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .team-copy strong { color: var(--fg); font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .team-copy span, .team-record small { color: var(--fg3); font-size: 0.72rem; }
 .team-record { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
 .team-record b { color: var(--accent2); font-family: 'Orbitron', sans-serif; font-size: 0.78rem; }
+.team-open { color: var(--accent); font-size: .68rem; white-space: nowrap; }
 
 .data-search,
 .season-picker { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--fg2); font-size: 0.78rem; }
@@ -1888,6 +1892,9 @@ button:disabled:hover {
 .dashboard-source { color: var(--fg3); font-size: 0.72rem; }
 .dashboard-loading { min-height: 58px; }
 .dashboard-alert { margin: 0; }
+.team-mark-large { display: grid; place-items: center; width: 72px; height: 72px; flex-shrink: 0; color: #fff; background: linear-gradient(135deg, var(--accent), var(--navy)); border: 1px solid rgba(255,255,255,.16); font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.team-history-table { min-width: 470px; }
+.team-roster-table { min-width: 620px; }
 .dashboard-hero { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px; border: 1px solid rgba(245,132,38,.26); background: linear-gradient(135deg, rgba(245,132,38,.13), rgba(20,28,52,.62)); }
 .dashboard-identity { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .player-monogram { display: grid; place-items: center; width: 64px; height: 64px; flex-shrink: 0; color: #fff; background: linear-gradient(135deg, var(--accent), var(--navy)); border: 1px solid rgba(255,255,255,.16); font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 800; }

@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useNbaDataStore } from '../stores/nba-data.js';
 import { useGameStore } from '../stores/game.js';
 import PlayerDashboard from './PlayerDashboard.vue';
+import TeamDashboard from './TeamDashboard.vue';
 
 const nba = useNbaDataStore();
 const game = useGameStore();
@@ -65,12 +66,17 @@ onMounted(() => nba.refresh());
 
         <div v-else-if="nba.view === 'teams'" class="data-view">
           <div class="view-title"><div><span class="view-kicker">TEAM INDEX</span><h3>球队概览</h3></div><span class="view-count">{{ nba.teams.length }} 支</span></div>
-          <div class="team-grid"><article v-for="team in nba.teams" :key="team.id" class="team-card"><div class="team-mark" :style="{ background: team.color || '#687083' }">{{ team.abbreviation }}</div><div class="team-copy"><strong>{{ team.name }}</strong><span>{{ team.city }} · {{ team.conference || 'NBA' }}</span></div><div class="team-record"><b>{{ team.record?.wins ?? '-' }} - {{ team.record?.losses ?? '-' }}</b><small>胜负</small></div></article></div>
+          <div class="team-grid"><article v-for="team in nba.teams" :key="team.id" class="team-card team-card-clickable" tabindex="0" role="button" @click="nba.openTeam(team.id)" @keydown.enter="nba.openTeam(team.id)"><div class="team-mark" :style="{ background: team.color || '#687083' }">{{ team.abbreviation }}</div><div class="team-copy"><strong>{{ team.name }}</strong><span>{{ team.city }} · {{ team.conference || 'NBA' }}</span></div><div class="team-record"><b>{{ team.record?.wins ?? '-' }} - {{ team.record?.losses ?? '-' }}</b><small>{{ pct(team.record?.winPct) }}</small></div><span class="team-open">查看</span></article></div>
         </div>
 
         <div v-else-if="nba.view === 'player'" class="data-view player-view">
           <PlayerDashboard v-if="nba.selectedPlayer" :player="nba.selectedPlayer" :loading="nba.playerLoading" :error="nba.playerError" @back="nba.closePlayer" />
           <div v-else class="data-loading compact">正在读取球员档案…</div>
+        </div>
+
+        <div v-else-if="nba.view === 'team'" class="data-view player-view">
+          <TeamDashboard v-if="nba.selectedTeam" :team="nba.selectedTeam" :roster="nba.selectedTeamRoster" :loading="nba.teamLoading" :error="nba.teamError" @back="nba.closeTeam" @open-player="nba.openPlayer" />
+          <div v-else class="data-loading compact">正在读取球队档案…</div>
         </div>
 
         <div v-else-if="nba.view === 'players'" class="data-view">
@@ -107,7 +113,7 @@ onMounted(() => nba.refresh());
             <div class="player-table-wrap"><table class="player-table"><thead><tr><th>球员</th><th>球队</th><th>场次</th><th>得分</th><th>篮板</th><th>助攻</th><th>命中率</th><th aria-label="操作"></th></tr></thead><tbody><tr v-for="player in nba.visiblePlayers" :key="`${player.id}-${player.teamId}`" class="player-row-clickable" tabindex="0" role="button" @click="nba.openPlayer(player.id)" @keydown.enter="nba.openPlayer(player.id)"><td><strong>{{ player.fullName }}</strong><small>{{ player.age ? `${Math.round(player.age)} 岁` : '—' }}</small></td><td>{{ player.teamId?.toUpperCase() || '-' }}</td><td>{{ player.stats?.gp ?? '-' }}</td><td>{{ number(player.stats?.points) }}</td><td>{{ number(player.stats?.rebounds) }}</td><td>{{ number(player.stats?.assists) }}</td><td>{{ pct(player.stats?.fgPct) }}</td><td class="player-open">查看</td></tr></tbody></table></div>
             <div v-if="nba.hasMorePlayers" class="data-more"><span>已显示 {{ nba.visiblePlayers.length }} / {{ nba.filteredPlayers.length }} 人</span><button class="btn-sm" @click="nba.showMorePlayers">加载更多记录</button></div>
             <div class="archive-section-heading"><div><span class="view-kicker">TEAM ARCHIVE</span><h4>赛季球队记录</h4></div><span>{{ nba.teams.length }} 支球队</span></div>
-            <div class="team-grid archive-team-grid"><article v-for="team in nba.teams" :key="team.id" class="team-card"><div class="team-mark" :style="{ background: team.color || '#687083' }">{{ team.abbreviation || team.id?.toUpperCase() }}</div><div class="team-copy"><strong>{{ team.name }}</strong><span>{{ team.city || 'NBA' }}</span></div><div class="team-record"><b>{{ team.record?.wins ?? '-' }} - {{ team.record?.losses ?? '-' }}</b><small>{{ pct(team.record?.winPct) }}</small></div></article></div>
+            <div class="team-grid archive-team-grid"><article v-for="team in nba.teams" :key="team.id" class="team-card team-card-clickable" tabindex="0" role="button" @click="nba.openTeam(team.id)" @keydown.enter="nba.openTeam(team.id)"><div class="team-mark" :style="{ background: team.color || '#687083' }">{{ team.abbreviation || team.id?.toUpperCase() }}</div><div class="team-copy"><strong>{{ team.name }}</strong><span>{{ team.city || 'NBA' }}</span></div><div class="team-record"><b>{{ team.record?.wins ?? '-' }} - {{ team.record?.losses ?? '-' }}</b><small>{{ pct(team.record?.winPct) }}</small></div><span class="team-open">查看</span></article></div>
           </template>
         </div>
       </template>
