@@ -1722,6 +1722,11 @@ button:disabled:hover {
   box-shadow: 0 0 14px rgba(245, 132, 38, 0.12);
 }
 
+.data-tab:disabled {
+  cursor: not-allowed;
+  opacity: .48;
+}
+
 .view-title {
   display: flex;
   align-items: flex-end;
@@ -1859,6 +1864,8 @@ button:disabled:hover {
 .player-dashboard { display: flex; flex-direction: column; gap: 14px; }
 .dashboard-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .dashboard-source { color: var(--fg3); font-size: 0.72rem; }
+.dashboard-loading { min-height: 58px; }
+.dashboard-alert { margin: 0; }
 .dashboard-hero { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px; border: 1px solid rgba(245,132,38,.26); background: linear-gradient(135deg, rgba(245,132,38,.13), rgba(20,28,52,.62)); }
 .dashboard-identity { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .player-monogram { display: grid; place-items: center; width: 64px; height: 64px; flex-shrink: 0; color: #fff; background: linear-gradient(135deg, var(--accent), var(--navy)); border: 1px solid rgba(255,255,255,.16); font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 800; }

@@ -57,7 +57,7 @@ onMounted(() => nba.refresh());
         </div>
 
         <div v-else-if="nba.view === 'player'" class="data-view player-view">
-          <PlayerDashboard v-if="nba.selectedPlayer" :player="nba.selectedPlayer" @back="nba.closePlayer" />
+          <PlayerDashboard v-if="nba.selectedPlayer" :player="nba.selectedPlayer" :loading="nba.playerLoading" :error="nba.playerError" @back="nba.closePlayer" />
           <div v-else class="data-loading compact">正在读取球员档案…</div>
         </div>
 

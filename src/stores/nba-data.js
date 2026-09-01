@@ -16,6 +16,10 @@ export const useNbaDataStore = defineStore('nba-data', () => {
   const search = ref('');
   const selectedSeason = ref('');
   const selectedPlayerId = ref('');
+  const playerProfiles = ref({});
+  const playerLoading = ref(false);
+  const playerError = ref('');
+  const playerLoadingIds = new Set();
 
   const seasons = computed(() => snapshot.value?.manifest?.history?.seasons || []);
   const currentPlayers = computed(() => snapshot.value?.players || []);
@@ -24,6 +28,7 @@ export const useNbaDataStore = defineStore('nba-data', () => {
   const selectedPlayer = computed(() => {
     if (!selectedPlayerId.value) return null;
     if (selectedPlayerId.value === '2544' && featuredPlayer.value) return featuredPlayer.value;
+    if (playerProfiles.value[selectedPlayerId.value]) return playerProfiles.value[selectedPlayerId.value];
     return currentPlayers.value.find((player) => String(player.id) === String(selectedPlayerId.value)) || null;
   });
   const activeHistory = computed(() => selectedSeason.value ? history.value[selectedSeason.value] : null);
@@ -57,6 +62,7 @@ export const useNbaDataStore = defineStore('nba-data', () => {
     featuredError.value = '';
     try {
       snapshot.value = await loadNbaSnapshot();
+      playerProfiles.value = {};
       featuredLoading.value = true;
       try {
         featuredPlayer.value = await fetchJson('players/2544.json');
@@ -109,6 +115,8 @@ export const useNbaDataStore = defineStore('nba-data', () => {
     selectedPlayerId.value = String(playerId);
     view.value = 'player';
     search.value = '';
+    playerError.value = '';
+    if (selectedPlayerId.value !== '2544') loadPlayerHistory(selectedPlayerId.value);
   }
 
   function closePlayer() {
@@ -116,9 +124,103 @@ export const useNbaDataStore = defineStore('nba-data', () => {
     view.value = 'players';
   }
 
+  async function loadPlayerHistory(playerId) {
+    const id = String(playerId);
+    if (id === '2544' || playerProfiles.value[id] || playerLoadingIds.has(id) || !seasons.value.length) return;
+    playerLoadingIds.add(id);
+    playerLoading.value = true;
+    playerError.value = '';
+    try {
+      const results = await Promise.allSettled(seasons.value.map(async (season) => {
+        const cached = history.value[season]?.players;
+        const playersForSeason = cached || (await fetchJson(`history/players/${season}.json`)).players || [];
+        return {
+          season,
+          players: playersForSeason,
+          rows: playersForSeason.filter((player) => String(player.id) === id)
+        };
+      }));
+      const base = currentPlayers.value.find((player) => String(player.id) === id);
+      if (!base) throw new Error('未找到该球员的当前资料');
+      const failedSeasons = results.filter((result) => result.status === 'rejected').length;
+      const loadedHistory = { ...history.value };
+      results.filter((result) => result.status === 'fulfilled').forEach((result) => {
+        loadedHistory[result.value.season] = {
+          ...(loadedHistory[result.value.season] || {}),
+          players: result.value.players
+        };
+      });
+      history.value = loadedHistory;
+      const seasonRows = results
+        .filter((result) => result.status === 'fulfilled')
+        .flatMap((result) => result.value.rows.map((player) => ({ season: result.value.season, player })));
+      const grouped = new Map();
+      seasonRows.forEach(({ season, player }) => {
+        const stats = player.stats || {};
+        const gp = Number(stats.gp) || 0;
+        const existing = grouped.get(season);
+        if (!existing) {
+          grouped.set(season, {
+            season,
+            team: player.teamId?.toUpperCase() || '-',
+            age: player.age,
+            gp,
+            minutes: Number(stats.minutes) || 0,
+            points: Number(stats.points) || 0,
+            rebounds: Number(stats.rebounds) || 0,
+            assists: Number(stats.assists) || 0,
+            steals: Number(stats.steals) || 0,
+            blocks: Number(stats.blocks) || 0,
+            fgPct: Number(stats.fgPct) || 0,
+            threePct: Number(stats.threePct) || 0,
+            ftPct: Number(stats.ftPct) || 0,
+            _weight: gp || 1
+          });
+          return;
+        }
+        const previousWeight = existing._weight || 1;
+        const nextWeight = previousWeight + (gp || 1);
+        const weighted = ['minutes', 'points', 'rebounds', 'assists', 'steals', 'blocks', 'fgPct', 'threePct', 'ftPct'];
+        weighted.forEach((key) => {
+          existing[key] = (existing[key] * previousWeight + (Number(stats[key]) || 0) * (gp || 1)) / nextWeight;
+        });
+        existing.gp += gp;
+        existing.team = existing.team === (player.teamId?.toUpperCase() || '-') ? existing.team : `${existing.team} / ${player.teamId?.toUpperCase() || '-'}`;
+        existing.age = existing.age ?? player.age;
+        existing._weight = nextWeight;
+      });
+      const rows = [...grouped.values()].map(({ _weight, ...row }) => row).sort((a, b) => a.season.localeCompare(b.season));
+      if (!rows.length && base.stats) {
+        rows.push({ season: snapshot.value?.manifest?.season || '当前赛季', team: base.teamId?.toUpperCase() || '-', age: base.age, ...base.stats });
+      }
+      playerProfiles.value = {
+        ...playerProfiles.value,
+        [id]: {
+          id: base.id,
+          fullName: base.fullName,
+          teamId: base.teamId,
+          teamName: base.teamName,
+          position: base.position,
+          age: base.age,
+          career: { regularSeason: rows, playoffs: [], allStar: [] }
+        }
+      };
+      if (failedSeasons) {
+        playerError.value = rows.length
+          ? `${failedSeasons} 个赛季数据暂时无法读取，已显示其余历史记录`
+          : '历史数据暂时无法读取，已显示当前赛季快照';
+      }
+    } catch (cause) {
+      playerError.value = cause instanceof Error ? cause.message : '球员历史数据加载失败';
+    } finally {
+      playerLoadingIds.delete(id);
+      playerLoading.value = playerLoadingIds.size > 0;
+    }
+  }
+
   return {
     snapshot, loading, historyLoading, featuredPlayer, featuredLoading, featuredError, error, historyError, view, search, selectedSeason, selectedPlayerId,
-    selectedPlayer, seasons, players, teams, currentTeams, currentGames, filteredPlayers, sortedLeaders,
-    dataStatus, generatedAt, refresh, loadHistorySeason, selectSeason, showView, openPlayer, closePlayer
+    playerLoading, playerError, selectedPlayer, seasons, players, teams, currentTeams, currentGames, filteredPlayers, sortedLeaders,
+    dataStatus, generatedAt, refresh, loadHistorySeason, selectSeason, showView, openPlayer, closePlayer, loadPlayerHistory
   };
 });
