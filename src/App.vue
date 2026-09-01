@@ -10,6 +10,7 @@ import EndingScreen from './components/EndingScreen.vue';
 import GalleryScreen from './components/GalleryScreen.vue';
 import RetireConfirm from './components/RetireConfirm.vue';
 import HistoryScreen from './components/HistoryScreen.vue';
+import NbaDataCenter from './components/NbaDataCenter.vue';
 const game = useGameStore();
 </script>
 
@@ -25,6 +26,7 @@ const game = useGameStore();
     <GalleryScreen v-else-if="game.screen === 'gallery'" />
     <RetireConfirm v-else-if="game.screen === 'retire-confirm'" />
     <HistoryScreen v-else-if="game.screen === 'history'" />
+    <NbaDataCenter v-else-if="game.screen === 'nba-data'" />
     <Transition name="notice"><div v-if="game.notice" class="toast">{{ game.notice }}</div></Transition>
   </main>
 </template>

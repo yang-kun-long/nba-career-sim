@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "dataVersion": "2025-26-2026-09-01",
+  "generatedAt": "2026-09-01T04:39:38Z",
+  "source": "NBA.com via nba_api",
+  "sourceStatus": "partial",
+  "season": "2025-26",
+  "timezone": "UTC",
+  "warnings": [
+    "live scoreboard unavailable: live scoreboard failed after 3 attempts: Expecting value: line 1 column 1 (char 0)"
+  ],
+  "files": {
+    "games": "/data/games/today.json",
+    "teams": "/data/teams/index.json",
+    "players": "/data/players/index.json",
+    "leaders": "/data/leaders/index.json",
+    "featuredPlayers": {
+      "2544": "/data/players/2544.json"
+    }
+  },
+  "history": {
+    "fromSeason": "2010-11",
+    "toSeason": "2025-26",
+    "seasons": [
+      "2010-11",
+      "2011-12",
+      "2012-13",
+      "2013-14",
+      "2014-15",
+      "2015-16",
+      "2016-17",
+      "2017-18",
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25",
+      "2025-26"
+    ],
+    "playersPattern": "/data/history/players/{season}.json",
+    "teamsPattern": "/data/history/teams/{season}.json"
+  },
+  "historyUpdatedAt": "2026-09-01T04:07:54Z"
+}

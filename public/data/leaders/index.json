@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "dataVersion": "2025-26-2026-09-01",
+  "generatedAt": "2026-09-01T04:39:38Z",
+  "leaders": {
+    "得分": [
+      {
+        "player": "Luka Dončić",
+        "team": "LAL",
+        "value": 33.5
+      },
+      {
+        "player": "Shai Gilgeous-Alexander",
+        "team": "OKC",
+        "value": 31.1
+      },
+      {
+        "player": "Anthony Edwards",
+        "team": "MIN",
+        "value": 28.8
+      },
+      {
+        "player": "Jaylen Brown",
+        "team": "BOS",
+        "value": 28.7
+      },
+      {
+        "player": "Tyrese Maxey",
+        "team": "PHI",
+        "value": 28.3
+      },
+      {
+        "player": "Donovan Mitchell",
+        "team": "CLE",
+        "value": 27.9
+      },
+      {
+        "player": "Kawhi Leonard",
+        "team": "LAC",
+        "value": 27.9
+      },
+      {
+        "player": "Nikola Jokić",
+        "team": "DEN",
+        "value": 27.7
+      },
+      {
+        "player": "Giannis Antetokounmpo",
+        "team": "MIL",
+        "value": 27.6
+      },
+      {
+        "player": "Joel Embiid",
+        "team": "PHI",
+        "value": 26.9
+      }
+    ],
+    "篮板": [
+      {
+        "player": "Nikola Jokić",
+        "team": "DEN",
+        "value": 12.9
+      },
+      {
+        "player": "Karl-Anthony Towns",
+        "team": "NYK",
+        "value": 11.9
+      },
+      {
+        "player": "Donovan Clingan",
+        "team": "POR",
+        "value": 11.6
+      },
+      {
+        "player": "Rudy Gobert",
+        "team": "MIN",
+        "value": 11.5
+      },
+      {
+        "player": "Victor Wembanyama",
+        "team": "SAS",
+        "value": 11.5
+      },
+      {
+        "player": "Domantas Sabonis",
+        "team": "SAC",
+        "value": 11.4
+      },
+      {
+        "player": "Anthony Davis",
+        "team": "WAS",
+        "value": 11.1
+      },
+      {
+        "player": "Zach Edey",
+        "team": "MEM",
+        "value": 11.1
+      },
+      {
+        "player": "Walker Kessler",
+        "team": "UTA",
+        "value": 10.8
+      },
+      {
+        "player": "Ivica Zubac",
+        "team": "IND",
+        "value": 10.6
+      }
+    ],
+    "助攻": [
+      {
+        "player": "Nikola Jokić",
+        "team": "DEN",
+        "value": 10.7
+      },
+      {
+        "player": "Cade Cunningham",
+        "team": "DET",
+        "value": 9.9
+      },
+      {
+        "player": "Josh Giddey",
+        "team": "CHI",
+        "value": 9.1
+      },
+      {
+        "player": "Luka Dončić",
+        "team": "LAL",
+        "value": 8.3
+      },
+      {
+        "player": "Ja Morant",
+        "team": "MEM",
+        "value": 8.1
+      },
+      {
+        "player": "James Harden",
+        "team": "CLE",
+        "value": 8.0
+      },
+      {
+        "player": "Trae Young",
+        "team": "WAS",
+        "value": 8.0
+      },
+      {
+        "player": "Jalen Johnson",
+        "team": "ATL",
+        "value": 7.9
+      },
+      {
+        "player": "Andrew Nembhard",
+        "team": "IND",
+        "value": 7.7
+      },
+      {
+        "player": "Kevin Porter Jr.",
+        "team": "MIL",
+        "value": 7.4
+      }
+    ]
+  }
+}

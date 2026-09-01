@@ -131,6 +131,17 @@ npx wrangler pages deploy dist --project-name nba-career-sim --branch main
 
 ## 下一步任务
 
+### NBA 官方数据流水线
+
+- 已加入 `scripts/refresh_nba_data.py`：每日快照构建，保留 `public/data/history/`
+- 已加入 `scripts/bootstrap_nba_history.py`：本地按赛季初始化历史基线
+- 已加入 `.github/workflows/data-refresh.yml`：每日 UTC 08:30 刷新并部署
+- 已加入 `src/components/NbaDataCenter.vue` 和 `src/stores/nba-data.js`：官方数据中心与历史赛季浏览
+- 当前本地历史基线为 `2010-11` 至 `2025-26`，约 3.7 MB，32 个 JSON 文件
+- 詹姆斯完整档案位于 `public/data/players/2544.json`，约 44 KB；每日快照会独立刷新该文件
+
+首次扩展历史区间或重新生成基线前，先阅读 [docs/nba-data-bootstrap.md](docs/nba-data-bootstrap.md)。不要把逐场或 Play-by-Play 原始数据直接放进主 Bundle。
+
 优先补齐两条关键业务分支的 Playwright E2E：
 
 1. 选秀流程

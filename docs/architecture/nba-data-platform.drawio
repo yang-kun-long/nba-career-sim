@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="30.2.6">
+  <diagram name="NBA Data Platform">
+    <mxGraphModel dx="1680" dy="1280" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1650" pageHeight="1350" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="NBA Career Sim · Official Data Architecture" style="text;html=1;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#1f2937;" vertex="1" parent="1">
+          <mxGeometry x="60" y="20" width="1480" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="external" value="1 · External Sources" style="swimlane;startSize=34;container=1;pointerEvents=0;rounded=0;html=1;fontStyle=1;fontSize=15;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="1480" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="nba_stats" value="NBA.com Stats API&#xa;Historical · roster · player · team" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontSize=13;" vertex="1" parent="external">
+          <mxGeometry x="120" y="60" width="300" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="nba_live" value="NBA.com Live API&#xa;Scoreboard · box score · play-by-play" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontSize=13;" vertex="1" parent="external">
+          <mxGeometry x="590" y="60" width="300" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="game_rules" value="Repository-owned Game Rules&#xa;Ratings · progression · events · mappings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="external">
+          <mxGeometry x="1060" y="60" width="300" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="automation" value="2 · GitHub Actions Data Build" style="swimlane;startSize=34;container=1;pointerEvents=0;rounded=0;html=1;fontStyle=1;fontSize=15;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="290" width="1480" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="trigger" value="Schedule + Manual Run&#xa;Daily snapshot (UTC cron)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="automation">
+          <mxGeometry x="50" y="75" width="220" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="collector" value="Python Collector&#xa;nba_api · retry · throttle · timeout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="automation">
+          <mxGeometry x="320" y="75" width="240" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="normalize" value="Normalize + Map IDs&#xa;Stable app-owned schema" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="automation">
+          <mxGeometry x="610" y="75" width="240" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="validate" value="Validate + Quality Gates&#xa;Schema · row count · freshness" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="automation">
+          <mxGeometry x="900" y="75" width="240" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="build" value="Build + Deploy&#xa;Vite bundle + generated JSON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="automation">
+          <mxGeometry x="1190" y="75" width="240" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="delivery" value="3 · Static Delivery" style="swimlane;startSize=34;container=1;pointerEvents=0;rounded=0;html=1;fontStyle=1;fontSize=15;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="60" y="540" width="1480" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="data_contract" value="Versioned Static Data Contract&#xa;manifest.json · teams/index.json · players/{id}.json&#xa;games/today.json · leaders/*.json" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="delivery">
+          <mxGeometry x="180" y="55" width="480" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="pages" value="Cloudflare Pages&#xa;Static Vue app + compressed JSON&#xa;Failed refresh keeps previous deployment online" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="delivery">
+          <mxGeometry x="820" y="55" width="480" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="frontend" value="4 · Frontend Data & Domain Layer" style="swimlane;startSize=34;container=1;pointerEvents=0;rounded=0;html=1;fontStyle=1;fontSize=15;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="770" width="1480" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="repository" value="OfficialDataRepository&#xa;fetch · cache · schema version · fallback" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="frontend">
+          <mxGeometry x="100" y="75" width="300" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="nba_store" value="NBA Data Store&#xa;loading · errors · freshness · filters" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" vertex="1" parent="frontend">
+          <mxGeometry x="480" y="75" width="300" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="game_adapter" value="Game Data Adapter&#xa;Official snapshot → simulation baselines&#xa;Never expose raw API shapes to engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="frontend">
+          <mxGeometry x="860" y="75" width="300" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="browser_state" value="Browser State&#xa;Pinia + localStorage saves" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="frontend">
+          <mxGeometry x="1240" y="75" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="experience" value="5 · Product Experience" style="swimlane;startSize=34;container=1;pointerEvents=0;rounded=0;html=1;fontStyle=1;fontSize=15;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1020" width="1480" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="home" value="Home / Global Navigation&#xa;Career Mode · NBA Data Center" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=13;" vertex="1" parent="experience">
+          <mxGeometry x="590" y="55" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="data_center" value="NBA Data Center&#xa;Today · teams · players · leaders&#xa;Search + detail + compare" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="experience">
+          <mxGeometry x="180" y="135" width="390" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="career_mode" value="Career Simulation&#xa;Current rosters + calibrated distributions&#xa;Save remains deterministic and offline-capable" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="experience">
+          <mxGeometry x="910" y="135" width="390" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="freshness" value="Data timestamp + source status shown in both modes" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="experience">
+          <mxGeometry x="570" y="160" width="340" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="daily / manual" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="trigger" target="collector">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="stats" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.3;entryY=0;fontSize=11;" edge="1" parent="1" source="nba_stats" target="collector">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="live snapshot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.7;entryY=0;fontSize=11;" edge="1" parent="1" source="nba_live" target="collector">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="raw responses" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="collector" target="normalize">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="normalized JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="normalize" target="validate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="validated only" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="validate" target="build">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="generate" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.35;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="build" target="data_contract">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1370" y="520" />
+              <mxPoint x="480" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="deploy atomically" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.7;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="build" target="pages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="served as static assets" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="data_contract" target="pages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="fetch on demand" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.35;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="pages" target="repository">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="930" y="750" />
+              <mxPoint x="310" y="750" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" value="query state" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="repository" target="nba_store">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="stable domain models" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=11;" edge="1" parent="1" source="repository" target="game_adapter">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="925" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13" value="rules + mappings" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.85;entryY=0;fontSize=11;dashed=1;" edge="1" parent="1" source="game_rules" target="game_adapter">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1490" y="270" />
+              <mxPoint x="1490" y="750" />
+              <mxPoint x="1190" y="750" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" value="read" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.35;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="nba_store" target="data_center">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="630" y="1000" />
+              <mxPoint x="440" y="1000" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e15" value="calibrate" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.35;entryY=0;fontSize=11;" edge="1" parent="1" source="game_adapter" target="career_mode">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" value="save / restore" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.65;exitY=1;entryX=0.85;entryY=0;fontSize=11;" edge="1" parent="1" source="browser_state" target="career_mode">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" value="browse" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="home" target="data_center">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" value="play" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;entryX=0.5;entryY=0;fontSize=11;" edge="1" parent="1" source="home" target="career_mode">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

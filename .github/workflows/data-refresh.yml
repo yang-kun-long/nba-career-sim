@@ -1,0 +1,61 @@
+name: Refresh NBA Data
+
+on:
+  schedule:
+    - cron: '30 8 * * *'
+  workflow_dispatch:
+    inputs:
+      season:
+        description: NBA season passed to stats.nba.com (for example 2025-26)
+        required: false
+        default: 2025-26
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nba-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh-and-deploy:
+    name: Refresh and deploy static NBA snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NBA_SEASON: ${{ github.event.inputs.season || vars.NBA_SEASON || '2025-26' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Install NBA data dependencies
+        run: python -m pip install -r scripts/requirements.txt
+
+      - name: Fetch, normalize, and validate NBA data
+        run: python scripts/refresh_nba_data.py --output public/data --season "$NBA_SEASON"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name nba-career-sim --branch main

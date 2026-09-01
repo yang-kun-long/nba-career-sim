@@ -23,6 +23,7 @@ export const useGameStore = defineStore('game', () => {
   const careerImage = ref(null);
   const notice = ref('');
   const saveRevision = ref(0);
+  const nbaDataReturnScreen = ref('title');
 
   const hasSave = computed(() => {
     saveRevision.value;
@@ -156,6 +157,11 @@ export const useGameStore = defineStore('game', () => {
   function backToGame() { screen.value = 'game'; }
   function showGallery() { galleryFilter.value = 'all'; screen.value = 'gallery'; }
   function filterGallery(category) { galleryFilter.value = category; }
+  function showNbaData() {
+    nbaDataReturnScreen.value = screen.value === 'nba-data' ? 'title' : screen.value;
+    screen.value = 'nba-data';
+  }
+  function backFromNbaData() { screen.value = nbaDataReturnScreen.value || 'title'; }
   function backToTitle() { screen.value = 'title'; }
   function saveGame() {
     const ok = save();
@@ -170,6 +176,6 @@ export const useGameStore = defineStore('game', () => {
     hasSave, teamName, eventProgress, nextLabel, gallery, newGame, loadGame, adjustAttr, inputAttr,
     randomAlloc, resetCreation, resetAllocation, confirmCreate, processYear, makeChoice, afterDraft, nextYear,
     confirmRetire, doRetire, showStats, showAttr, showHistory, backToGame, showGallery, filterGallery,
-    backToTitle, saveGame, generateCareerImage
+    backToTitle, showNbaData, backFromNbaData, saveGame, generateCareerImage
   };
 });

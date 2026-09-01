@@ -12,6 +12,7 @@ const game = useGameStore();
       <div class="menu">
         <button @click="game.newGame">新游戏</button>
         <button v-if="game.hasSave" @click="game.loadGame">继续游戏</button>
+        <button @click="game.showNbaData">NBA 数据中心</button>
         <button @click="game.showGallery">结局图鉴</button>
       </div>
       <p class="hint">每一个选择，决定你的一生</p>

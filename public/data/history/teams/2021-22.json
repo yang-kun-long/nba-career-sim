@@ -1,0 +1,458 @@
+{
+  "schemaVersion": 1,
+  "dataVersion": "history-2021-22",
+  "generatedAt": "2026-09-01T04:07:40Z",
+  "season": "2021-22",
+  "teams": [
+    {
+      "id": "atl",
+      "nbaId": 1610612737,
+      "name": "Atlanta Hawks",
+      "city": "Atlanta",
+      "abbreviation": "ATL",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 43,
+        "losses": 39,
+        "winPct": 0.524,
+        "rank": 9
+      }
+    },
+    {
+      "id": "bos",
+      "nbaId": 1610612738,
+      "name": "Boston Celtics",
+      "city": "Boston",
+      "abbreviation": "BOS",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 51,
+        "losses": 31,
+        "winPct": 0.622,
+        "rank": 2
+      }
+    },
+    {
+      "id": "cle",
+      "nbaId": 1610612739,
+      "name": "Cleveland Cavaliers",
+      "city": "Cleveland",
+      "abbreviation": "CLE",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 44,
+        "losses": 38,
+        "winPct": 0.537,
+        "rank": 8
+      }
+    },
+    {
+      "id": "nop",
+      "nbaId": 1610612740,
+      "name": "New Orleans Pelicans",
+      "city": "New Orleans",
+      "abbreviation": "NOP",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 36,
+        "losses": 46,
+        "winPct": 0.439,
+        "rank": 9
+      }
+    },
+    {
+      "id": "chi",
+      "nbaId": 1610612741,
+      "name": "Chicago Bulls",
+      "city": "Chicago",
+      "abbreviation": "CHI",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 46,
+        "losses": 36,
+        "winPct": 0.561,
+        "rank": 6
+      }
+    },
+    {
+      "id": "dal",
+      "nbaId": 1610612742,
+      "name": "Dallas Mavericks",
+      "city": "Dallas",
+      "abbreviation": "DAL",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 52,
+        "losses": 30,
+        "winPct": 0.634,
+        "rank": 4
+      }
+    },
+    {
+      "id": "den",
+      "nbaId": 1610612743,
+      "name": "Denver Nuggets",
+      "city": "Denver",
+      "abbreviation": "DEN",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 48,
+        "losses": 34,
+        "winPct": 0.585,
+        "rank": 6
+      }
+    },
+    {
+      "id": "gsw",
+      "nbaId": 1610612744,
+      "name": "Golden State Warriors",
+      "city": "San Francisco",
+      "abbreviation": "GSW",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 53,
+        "losses": 29,
+        "winPct": 0.646,
+        "rank": 3
+      }
+    },
+    {
+      "id": "hou",
+      "nbaId": 1610612745,
+      "name": "Houston Rockets",
+      "city": "Houston",
+      "abbreviation": "HOU",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 20,
+        "losses": 62,
+        "winPct": 0.244,
+        "rank": 15
+      }
+    },
+    {
+      "id": "lac",
+      "nbaId": 1610612746,
+      "name": "Los Angeles Clippers",
+      "city": "Los Angeles",
+      "abbreviation": "LAC",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 42,
+        "losses": 40,
+        "winPct": 0.512,
+        "rank": 8
+      }
+    },
+    {
+      "id": "lal",
+      "nbaId": 1610612747,
+      "name": "Los Angeles Lakers",
+      "city": "Los Angeles",
+      "abbreviation": "LAL",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 33,
+        "losses": 49,
+        "winPct": 0.402,
+        "rank": 11
+      }
+    },
+    {
+      "id": "mia",
+      "nbaId": 1610612748,
+      "name": "Miami Heat",
+      "city": "Miami",
+      "abbreviation": "MIA",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 53,
+        "losses": 29,
+        "winPct": 0.646,
+        "rank": 1
+      }
+    },
+    {
+      "id": "mil",
+      "nbaId": 1610612749,
+      "name": "Milwaukee Bucks",
+      "city": "Milwaukee",
+      "abbreviation": "MIL",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 51,
+        "losses": 31,
+        "winPct": 0.622,
+        "rank": 3
+      }
+    },
+    {
+      "id": "min",
+      "nbaId": 1610612750,
+      "name": "Minnesota Timberwolves",
+      "city": "Minnesota",
+      "abbreviation": "MIN",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 46,
+        "losses": 36,
+        "winPct": 0.561,
+        "rank": 7
+      }
+    },
+    {
+      "id": "bkn",
+      "nbaId": 1610612751,
+      "name": "Brooklyn Nets",
+      "city": "Brooklyn",
+      "abbreviation": "BKN",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 44,
+        "losses": 38,
+        "winPct": 0.537,
+        "rank": 7
+      }
+    },
+    {
+      "id": "nyk",
+      "nbaId": 1610612752,
+      "name": "New York Knicks",
+      "city": "New York",
+      "abbreviation": "NYK",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 37,
+        "losses": 45,
+        "winPct": 0.451,
+        "rank": 11
+      }
+    },
+    {
+      "id": "orl",
+      "nbaId": 1610612753,
+      "name": "Orlando Magic",
+      "city": "Orlando",
+      "abbreviation": "ORL",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 22,
+        "losses": 60,
+        "winPct": 0.268,
+        "rank": 15
+      }
+    },
+    {
+      "id": "ind",
+      "nbaId": 1610612754,
+      "name": "Indiana Pacers",
+      "city": "Indiana",
+      "abbreviation": "IND",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 25,
+        "losses": 57,
+        "winPct": 0.305,
+        "rank": 13
+      }
+    },
+    {
+      "id": "phi",
+      "nbaId": 1610612755,
+      "name": "Philadelphia 76ers",
+      "city": "Philadelphia",
+      "abbreviation": "PHI",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 51,
+        "losses": 31,
+        "winPct": 0.622,
+        "rank": 4
+      }
+    },
+    {
+      "id": "phx",
+      "nbaId": 1610612756,
+      "name": "Phoenix Suns",
+      "city": "Phoenix",
+      "abbreviation": "PHX",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 64,
+        "losses": 18,
+        "winPct": 0.78,
+        "rank": 1
+      }
+    },
+    {
+      "id": "por",
+      "nbaId": 1610612757,
+      "name": "Portland Trail Blazers",
+      "city": "Portland",
+      "abbreviation": "POR",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 27,
+        "losses": 55,
+        "winPct": 0.329,
+        "rank": 13
+      }
+    },
+    {
+      "id": "sac",
+      "nbaId": 1610612758,
+      "name": "Sacramento Kings",
+      "city": "Sacramento",
+      "abbreviation": "SAC",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 30,
+        "losses": 52,
+        "winPct": 0.366,
+        "rank": 12
+      }
+    },
+    {
+      "id": "sas",
+      "nbaId": 1610612759,
+      "name": "San Antonio Spurs",
+      "city": "San Antonio",
+      "abbreviation": "SAS",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 34,
+        "losses": 48,
+        "winPct": 0.415,
+        "rank": 10
+      }
+    },
+    {
+      "id": "okc",
+      "nbaId": 1610612760,
+      "name": "Oklahoma City Thunder",
+      "city": "Oklahoma City",
+      "abbreviation": "OKC",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 24,
+        "losses": 58,
+        "winPct": 0.293,
+        "rank": 14
+      }
+    },
+    {
+      "id": "tor",
+      "nbaId": 1610612761,
+      "name": "Toronto Raptors",
+      "city": "Toronto",
+      "abbreviation": "TOR",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 48,
+        "losses": 34,
+        "winPct": 0.585,
+        "rank": 5
+      }
+    },
+    {
+      "id": "uta",
+      "nbaId": 1610612762,
+      "name": "Utah Jazz",
+      "city": "Utah",
+      "abbreviation": "UTA",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 49,
+        "losses": 33,
+        "winPct": 0.598,
+        "rank": 5
+      }
+    },
+    {
+      "id": "mem",
+      "nbaId": 1610612763,
+      "name": "Memphis Grizzlies",
+      "city": "Memphis",
+      "abbreviation": "MEM",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 56,
+        "losses": 26,
+        "winPct": 0.683,
+        "rank": 2
+      }
+    },
+    {
+      "id": "was",
+      "nbaId": 1610612764,
+      "name": "Washington Wizards",
+      "city": "Washington",
+      "abbreviation": "WAS",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 35,
+        "losses": 47,
+        "winPct": 0.427,
+        "rank": 12
+      }
+    },
+    {
+      "id": "det",
+      "nbaId": 1610612765,
+      "name": "Detroit Pistons",
+      "city": "Detroit",
+      "abbreviation": "DET",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 23,
+        "losses": 59,
+        "winPct": 0.28,
+        "rank": 14
+      }
+    },
+    {
+      "id": "cha",
+      "nbaId": 1610612766,
+      "name": "Charlotte Hornets",
+      "city": "Charlotte",
+      "abbreviation": "CHA",
+      "conference": "",
+      "division": "",
+      "record": {
+        "wins": 43,
+        "losses": 39,
+        "winPct": 0.524,
+        "rank": 10
+      }
+    }
+  ]
+}

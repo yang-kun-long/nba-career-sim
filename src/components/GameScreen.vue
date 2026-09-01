@@ -23,6 +23,7 @@ const effects = computed(() => game.eventResult || []);
       </div>
       <div class="hud-btns">
         <button class="btn-sm" @click="game.showStats">数据</button>
+        <button class="btn-sm" @click="game.showNbaData">官方</button>
         <button class="btn-sm" @click="game.showHistory">事件</button>
         <button class="btn-sm" @click="game.saveGame">存档</button>
         <button class="btn-sm" @click="game.showAttr">属性</button>
