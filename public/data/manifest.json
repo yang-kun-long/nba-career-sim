@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "dataVersion": "2025-26-2026-09-01",
-  "generatedAt": "2026-09-01T04:39:38Z",
+  "generatedAt": "2026-09-01T15:53:04Z",
   "source": "NBA.com via nba_api",
   "sourceStatus": "partial",
   "season": "2025-26",
@@ -12,32 +12,32 @@
   "dataHealth": {
     "snapshot": {
       "status": "partial",
-      "updatedAt": "2026-09-01T04:39:38Z"
+      "updatedAt": "2026-09-01T15:53:04Z"
     },
     "games": {
       "status": "partial",
-      "updatedAt": "2026-09-01T04:39:38Z",
+      "updatedAt": "2026-09-01T15:53:04Z",
       "count": 0,
-      "warning": "live scoreboard unavailable"
+      "warning": "live scoreboard unavailable: live scoreboard failed after 3 attempts: Expecting value: line 1 column 1 (char 0)"
     },
     "teams": {
       "status": "ok",
-      "updatedAt": "2026-09-01T04:39:38Z",
+      "updatedAt": "2026-09-01T15:53:04Z",
       "count": 30
     },
     "players": {
       "status": "ok",
-      "updatedAt": "2026-09-01T04:39:38Z",
+      "updatedAt": "2026-09-01T15:53:04Z",
       "count": 582
     },
     "leaders": {
       "status": "ok",
-      "updatedAt": "2026-09-01T04:39:38Z",
+      "updatedAt": "2026-09-01T15:53:04Z",
       "count": 30
     },
     "featuredPlayer": {
       "status": "ok",
-      "updatedAt": "2026-09-01T04:39:38Z"
+      "updatedAt": "2026-09-01T15:53:04Z"
     }
   },
   "files": {
@@ -77,5 +77,5 @@
     "careerSchemaVersion": 2,
     "playerStatsMode": "perGame"
   },
-  "historyUpdatedAt": "2026-09-01T04:07:54Z"
+  "historyUpdatedAt": "2026-09-01T15:53:04Z"
 }

@@ -59,7 +59,7 @@ test('restores a shared player dashboard from the URL', async ({ page }) => {
   expect(new URL(page.url()).searchParams.get('player')).toBeNull();
 });
 
-test('provides a usable overview, official leaders, and season archive tables', async ({ page }) => {
+test('provides a usable overview, filterable leaders, and season archive tables', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.getByRole('button', { name: 'NBA 数据中心' }).click();
@@ -70,9 +70,18 @@ test('provides a usable overview, official leaders, and season archive tables', 
   await expect(page.locator('.health-partial')).toHaveCount(1);
 
   await page.getByRole('button', { name: '排行榜', exact: true }).click();
-  await expect(page.locator('.leader-card').first()).toContainText('Luka');
-
+  await expect(page.locator('.leader-toolbar')).toBeVisible();
+  await expect(page.locator('.leader-row-clickable')).toHaveCount(10);
+  await page.locator('#leader-metric').selectOption('tsPct');
+  await expect(page.locator('.leader-card-heading')).toContainText('真实命中率');
+  await expect(page.locator('.leader-row-clickable').first().locator('b')).toContainText('%');
+  await page.locator('#leader-min-games').selectOption('40');
+  await expect(page.locator('.leader-card-heading')).toContainText('人符合条件');
+  await page.locator('.leader-row-clickable').first().click();
+  await expect(page.locator('.player-dashboard')).toBeVisible();
+  await page.getByRole('button', { name: '返回球员列表' }).click();
   await page.getByRole('button', { name: '历史赛季', exact: true }).click();
+
   await expect(page.locator('.archive-section-heading').first()).toContainText('赛季球员记录');
   await expect(page.locator('.archive-team-grid .team-card')).toHaveCount(30);
   await expect(page.locator('.archive-section-heading').nth(1)).toContainText('赛季球队记录');

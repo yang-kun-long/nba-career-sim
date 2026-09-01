@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "dataVersion": "history-2025-26",
-  "generatedAt": "2026-09-01T04:07:54Z",
+  "dataVersion": "history-2025-26-2026-09-01",
+  "generatedAt": "2026-09-01T15:53:04Z",
   "season": "2025-26",
   "teams": [
     {
@@ -15,9 +15,9 @@
       "record": {
         "wins": 46,
         "losses": 36,
-        "winPct": 0.561,
-        "rank": 6
-      }
+        "winPct": 0.561
+      },
+      "rank": 6
     },
     {
       "id": "bos",
@@ -30,9 +30,9 @@
       "record": {
         "wins": 56,
         "losses": 26,
-        "winPct": 0.683,
-        "rank": 2
-      }
+        "winPct": 0.683
+      },
+      "rank": 2
     },
     {
       "id": "cle",
@@ -45,9 +45,9 @@
       "record": {
         "wins": 52,
         "losses": 30,
-        "winPct": 0.634,
-        "rank": 4
-      }
+        "winPct": 0.634
+      },
+      "rank": 4
     },
     {
       "id": "nop",
@@ -60,9 +60,9 @@
       "record": {
         "wins": 26,
         "losses": 56,
-        "winPct": 0.317,
-        "rank": 11
-      }
+        "winPct": 0.317
+      },
+      "rank": 11
     },
     {
       "id": "chi",
@@ -75,9 +75,9 @@
       "record": {
         "wins": 31,
         "losses": 51,
-        "winPct": 0.378,
-        "rank": 12
-      }
+        "winPct": 0.378
+      },
+      "rank": 12
     },
     {
       "id": "dal",
@@ -90,9 +90,9 @@
       "record": {
         "wins": 26,
         "losses": 56,
-        "winPct": 0.317,
-        "rank": 12
-      }
+        "winPct": 0.317
+      },
+      "rank": 12
     },
     {
       "id": "den",
@@ -105,9 +105,9 @@
       "record": {
         "wins": 54,
         "losses": 28,
-        "winPct": 0.659,
-        "rank": 3
-      }
+        "winPct": 0.659
+      },
+      "rank": 3
     },
     {
       "id": "gsw",
@@ -120,9 +120,9 @@
       "record": {
         "wins": 37,
         "losses": 45,
-        "winPct": 0.451,
-        "rank": 10
-      }
+        "winPct": 0.451
+      },
+      "rank": 10
     },
     {
       "id": "hou",
@@ -135,9 +135,9 @@
       "record": {
         "wins": 52,
         "losses": 30,
-        "winPct": 0.634,
-        "rank": 5
-      }
+        "winPct": 0.634
+      },
+      "rank": 5
     },
     {
       "id": "lac",
@@ -150,9 +150,9 @@
       "record": {
         "wins": 42,
         "losses": 40,
-        "winPct": 0.512,
-        "rank": 9
-      }
+        "winPct": 0.512
+      },
+      "rank": 9
     },
     {
       "id": "lal",
@@ -165,9 +165,9 @@
       "record": {
         "wins": 53,
         "losses": 29,
-        "winPct": 0.646,
-        "rank": 4
-      }
+        "winPct": 0.646
+      },
+      "rank": 4
     },
     {
       "id": "mia",
@@ -180,9 +180,9 @@
       "record": {
         "wins": 43,
         "losses": 39,
-        "winPct": 0.524,
-        "rank": 10
-      }
+        "winPct": 0.524
+      },
+      "rank": 10
     },
     {
       "id": "mil",
@@ -195,9 +195,9 @@
       "record": {
         "wins": 32,
         "losses": 50,
-        "winPct": 0.39,
-        "rank": 11
-      }
+        "winPct": 0.39
+      },
+      "rank": 11
     },
     {
       "id": "min",
@@ -210,9 +210,9 @@
       "record": {
         "wins": 49,
         "losses": 33,
-        "winPct": 0.598,
-        "rank": 6
-      }
+        "winPct": 0.598
+      },
+      "rank": 6
     },
     {
       "id": "bkn",
@@ -225,9 +225,9 @@
       "record": {
         "wins": 20,
         "losses": 62,
-        "winPct": 0.244,
-        "rank": 13
-      }
+        "winPct": 0.244
+      },
+      "rank": 13
     },
     {
       "id": "nyk",
@@ -240,9 +240,9 @@
       "record": {
         "wins": 53,
         "losses": 29,
-        "winPct": 0.646,
-        "rank": 3
-      }
+        "winPct": 0.646
+      },
+      "rank": 3
     },
     {
       "id": "orl",
@@ -255,9 +255,9 @@
       "record": {
         "wins": 45,
         "losses": 37,
-        "winPct": 0.549,
-        "rank": 8
-      }
+        "winPct": 0.549
+      },
+      "rank": 8
     },
     {
       "id": "ind",
@@ -270,9 +270,9 @@
       "record": {
         "wins": 19,
         "losses": 63,
-        "winPct": 0.232,
-        "rank": 14
-      }
+        "winPct": 0.232
+      },
+      "rank": 14
     },
     {
       "id": "phi",
@@ -285,9 +285,9 @@
       "record": {
         "wins": 45,
         "losses": 37,
-        "winPct": 0.549,
-        "rank": 7
-      }
+        "winPct": 0.549
+      },
+      "rank": 7
     },
     {
       "id": "phx",
@@ -300,9 +300,9 @@
       "record": {
         "wins": 45,
         "losses": 37,
-        "winPct": 0.549,
-        "rank": 7
-      }
+        "winPct": 0.549
+      },
+      "rank": 7
     },
     {
       "id": "por",
@@ -315,9 +315,9 @@
       "record": {
         "wins": 42,
         "losses": 40,
-        "winPct": 0.512,
-        "rank": 8
-      }
+        "winPct": 0.512
+      },
+      "rank": 8
     },
     {
       "id": "sac",
@@ -330,9 +330,9 @@
       "record": {
         "wins": 22,
         "losses": 60,
-        "winPct": 0.268,
-        "rank": 14
-      }
+        "winPct": 0.268
+      },
+      "rank": 14
     },
     {
       "id": "sas",
@@ -345,9 +345,9 @@
       "record": {
         "wins": 62,
         "losses": 20,
-        "winPct": 0.756,
-        "rank": 2
-      }
+        "winPct": 0.756
+      },
+      "rank": 2
     },
     {
       "id": "okc",
@@ -360,9 +360,9 @@
       "record": {
         "wins": 64,
         "losses": 18,
-        "winPct": 0.78,
-        "rank": 1
-      }
+        "winPct": 0.78
+      },
+      "rank": 1
     },
     {
       "id": "tor",
@@ -375,9 +375,9 @@
       "record": {
         "wins": 46,
         "losses": 36,
-        "winPct": 0.561,
-        "rank": 5
-      }
+        "winPct": 0.561
+      },
+      "rank": 5
     },
     {
       "id": "uta",
@@ -390,9 +390,9 @@
       "record": {
         "wins": 22,
         "losses": 60,
-        "winPct": 0.268,
-        "rank": 15
-      }
+        "winPct": 0.268
+      },
+      "rank": 15
     },
     {
       "id": "mem",
@@ -405,9 +405,9 @@
       "record": {
         "wins": 25,
         "losses": 57,
-        "winPct": 0.305,
-        "rank": 13
-      }
+        "winPct": 0.305
+      },
+      "rank": 13
     },
     {
       "id": "was",
@@ -420,9 +420,9 @@
       "record": {
         "wins": 17,
         "losses": 65,
-        "winPct": 0.207,
-        "rank": 15
-      }
+        "winPct": 0.207
+      },
+      "rank": 15
     },
     {
       "id": "det",
@@ -435,9 +435,9 @@
       "record": {
         "wins": 60,
         "losses": 22,
-        "winPct": 0.732,
-        "rank": 1
-      }
+        "winPct": 0.732
+      },
+      "rank": 1
     },
     {
       "id": "cha",
@@ -450,9 +450,9 @@
       "record": {
         "wins": 44,
         "losses": 38,
-        "winPct": 0.537,
-        "rank": 9
-      }
+        "winPct": 0.537
+      },
+      "rank": 9
     }
   ]
 }

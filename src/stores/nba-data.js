@@ -2,6 +2,23 @@ import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { fetchJson, formatSnapshotDate, loadNbaSnapshot } from '../data/nba-data.js';
 
+const LEADER_METRIC_OPTIONS = Object.freeze([
+  { value: 'points', label: '场均得分' },
+  { value: 'rebounds', label: '场均篮板' },
+  { value: 'assists', label: '场均助攻' },
+  { value: 'steals', label: '场均抢断' },
+  { value: 'blocks', label: '场均盖帽' },
+  { value: 'threeMade', label: '场均三分命中' },
+  { value: 'threePct', label: '三分命中率', percent: true },
+  { value: 'tsPct', label: '真实命中率 TS%', percent: true },
+  { value: 'efgPct', label: '有效命中率 eFG%', percent: true }
+]);
+
+function statNumber(player, field) {
+  const numeric = Number(player.stats?.[field]);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
 function resolveArchivePath(pattern, placeholder, id, fallback) {
   const resolved = (pattern || fallback).replace(placeholder, encodeURIComponent(String(id)));
   return resolved.replace(/^\/?data\//, '');
@@ -24,6 +41,9 @@ export const useNbaDataStore = defineStore('nba-data', () => {
   const view = ref('overview');
   const search = ref('');
   const playerListLimit = ref(80);
+  const leaderMetric = ref('points');
+  const leaderPosition = ref('all');
+  const leaderMinGames = ref(20);
   const selectedSeason = ref('');
   const selectedPlayerId = ref('');
   const playerProfiles = ref({});
@@ -72,6 +92,27 @@ export const useNbaDataStore = defineStore('nba-data', () => {
   });
   const visiblePlayers = computed(() => filteredPlayers.value.slice(0, playerListLimit.value));
   const hasMorePlayers = computed(() => visiblePlayers.value.length < filteredPlayers.value.length);
+  const leaderMetricOptions = LEADER_METRIC_OPTIONS;
+  const selectedLeaderMetric = computed(() => leaderMetricOptions.find((item) => item.value === leaderMetric.value) || leaderMetricOptions[0]);
+  const leaderPositions = computed(() => {
+    const positions = [...new Set(currentPlayers.value
+      .map((player) => String(player.position || '').trim())
+      .filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b));
+    return [{ value: 'all', label: '全部位置' }, ...positions.map((position) => ({ value: position, label: position }))];
+  });
+  const rankedLeaders = computed(() => {
+    const metric = selectedLeaderMetric.value.value;
+    const minimumGames = Math.max(0, Number(leaderMinGames.value) || 0);
+    return currentPlayers.value
+      .filter((player) => (statNumber(player, 'gp') || 0) >= minimumGames)
+      .filter((player) => leaderPosition.value === 'all' || player.position === leaderPosition.value)
+      .map((player) => ({ ...player, leaderValue: statNumber(player, metric) }))
+      .filter((player) => player.leaderValue !== null)
+      .sort((left, right) => right.leaderValue - left.leaderValue || left.fullName.localeCompare(right.fullName));
+  });
+  const leaderRows = computed(() => rankedLeaders.value.slice(0, 10));
+  const leaderEligibleCount = computed(() => rankedLeaders.value.length);
   const sortedLeaders = computed(() => {
     const fields = [['points', '得分'], ['rebounds', '篮板'], ['assists', '助攻']];
     return fields.map(([field, label]) => ({
@@ -406,8 +447,9 @@ export const useNbaDataStore = defineStore('nba-data', () => {
   }
 
   return {
-    snapshot, loading, historyLoading, featuredPlayer, featuredLoading, featuredError, error, historyError, view, search, playerListLimit, selectedSeason, selectedPlayerId,
+    snapshot, loading, historyLoading, featuredPlayer, featuredLoading, featuredError, error, historyError, view, search, playerListLimit, leaderMetric, leaderPosition, leaderMinGames, selectedSeason, selectedPlayerId,
     playerLoading, playerError, selectedPlayer, selectedTeamId, selectedTeam, selectedTeamRoster, teamLoading, teamError, seasons, players, teams, currentTeams, currentGames, filteredPlayers, visiblePlayers, hasMorePlayers, sortedLeaders, leaderCards, overviewStats,
+    leaderMetricOptions, selectedLeaderMetric, leaderPositions, leaderRows, leaderEligibleCount,
     dataStatus, generatedAt, dataHealth, refresh, loadHistorySeason, selectSeason, showView, showMorePlayers, openPlayer, closePlayer, loadPlayerHistory, openTeam, closeTeam, loadTeamHistory
   };
 });

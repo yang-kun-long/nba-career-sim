@@ -57,6 +57,57 @@ def value(row: Any, *keys: str, default: Any = None) -> Any:
     return default
 
 
+def decimal_ratio(numerator: Any, denominator: Any) -> float | None:
+    """Return a percentage as a decimal while guarding incomplete NBA rows."""
+    try:
+        top = float(numerator)
+        bottom = float(denominator)
+    except (TypeError, ValueError):
+        return None
+    if bottom <= 0:
+        return None
+    return round(top / bottom, 3)
+
+
+def player_stat_line(row: dict[str, Any]) -> dict[str, Any]:
+    """Normalize base box-score fields and derive portable efficiency metrics."""
+    field_goals_made = value(row, "FGM")
+    field_goals_attempted = value(row, "FGA")
+    threes_made = value(row, "FG3M")
+    threes_attempted = value(row, "FG3A")
+    free_throws_attempted = value(row, "FTA")
+    effective_fg = value(row, "EFG_PCT")
+    true_shooting = value(row, "TS_PCT")
+    if effective_fg is None:
+        try:
+            effective_fg = decimal_ratio(float(field_goals_made) + 0.5 * float(threes_made), field_goals_attempted)
+        except (TypeError, ValueError):
+            effective_fg = None
+    if true_shooting is None:
+        try:
+            true_shooting = decimal_ratio(value(row, "PTS"), 2 * (float(field_goals_attempted) + 0.44 * float(free_throws_attempted)))
+        except (TypeError, ValueError):
+            true_shooting = None
+    return {
+        "gp": value(row, "GP"),
+        "minutes": value(row, "MIN"),
+        "points": value(row, "PTS"),
+        "rebounds": value(row, "REB"),
+        "assists": value(row, "AST"),
+        "steals": value(row, "STL"),
+        "blocks": value(row, "BLK"),
+        "turnovers": value(row, "TOV"),
+        "fgPct": value(row, "FG_PCT"),
+        "threePct": value(row, "FG3_PCT"),
+        "ftPct": value(row, "FT_PCT"),
+        "threeMade": threes_made,
+        "threeAttempted": threes_attempted,
+        "freeThrowsAttempted": free_throws_attempted,
+        "efgPct": effective_fg,
+        "tsPct": true_shooting,
+    }
+
+
 def call_with_retry(factory, *, retries: int, pause: float, label: str, **kwargs):
     last_error: Exception | None = None
     for attempt in range(1, retries + 1):
@@ -94,6 +145,7 @@ def normalize_career_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Keep the career endpoint detailed while avoiding NBA-specific column names."""
     normalized = []
     for row in rows:
+        efficiency = player_stat_line(row)
         normalized.append({
             "season": value(row, "SEASON_ID"),
             "league": value(row, "LEAGUE_ID"),
@@ -112,6 +164,8 @@ def normalize_career_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "ftm": value(row, "FTM"),
             "fta": value(row, "FTA"),
             "ftPct": value(row, "FT_PCT"),
+            "efgPct": efficiency["efgPct"],
+            "tsPct": efficiency["tsPct"],
             "offensiveRebounds": value(row, "OREB"),
             "defensiveRebounds": value(row, "DREB"),
             "rebounds": value(row, "REB"),
@@ -265,18 +319,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
             "teamName": team["full_name"],
             "position": value(row, "POSITION", default=""),
             "age": value(row, "AGE"),
-            "stats": {
-                "gp": value(row, "GP"),
-                "minutes": value(row, "MIN"),
-                "points": value(row, "PTS"),
-                "rebounds": value(row, "REB"),
-                "assists": value(row, "AST"),
-                "steals": value(row, "STL"),
-                "blocks": value(row, "BLK"),
-                "fgPct": value(row, "FG_PCT"),
-                "threePct": value(row, "FG3_PCT"),
-                "ftPct": value(row, "FT_PCT"),
-            },
+            "stats": player_stat_line(row),
         })
     if not players:
         raise RuntimeError("NBA player stats returned zero usable rows")

@@ -14,7 +14,8 @@ from typing import Any
 
 PLAYER_FIELDS = (
     "minutes", "points", "rebounds", "assists", "steals", "blocks",
-    "fgPct", "threePct", "ftPct",
+    "turnovers", "fgPct", "threePct", "ftPct", "threeMade", "threeAttempted",
+    "freeThrowsAttempted", "efgPct", "tsPct",
 )
 FEATURED_COUNTING_FIELDS = (
     "minutes", "fgm", "fga", "threeMade", "threeAttempted", "ftm", "fta",

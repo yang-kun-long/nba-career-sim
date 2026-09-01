@@ -17,7 +17,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from refresh_nba_data import call_with_retry, frame_rows, now_iso, serializable, value, write_json
+from refresh_nba_data import call_with_retry, frame_rows, now_iso, player_stat_line, serializable, value, write_json
 
 
 def parse_args() -> argparse.Namespace:
@@ -105,18 +105,7 @@ def build_season(season: str, args: argparse.Namespace) -> tuple[dict[str, Any],
             "teamId": team["abbreviation"].lower(),
             "teamName": team["full_name"],
             "age": value(row, "AGE"),
-            "stats": {
-                "gp": value(row, "GP"),
-                "minutes": value(row, "MIN"),
-                "points": value(row, "PTS"),
-                "rebounds": value(row, "REB"),
-                "assists": value(row, "AST"),
-                "steals": value(row, "STL"),
-                "blocks": value(row, "BLK"),
-                "fgPct": value(row, "FG_PCT"),
-                "threePct": value(row, "FG3_PCT"),
-                "ftPct": value(row, "FT_PCT"),
-            },
+            "stats": player_stat_line(row),
         })
     if not player_history:
         raise RuntimeError(f"{season} player stats returned zero usable rows")

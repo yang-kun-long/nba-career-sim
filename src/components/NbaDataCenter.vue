@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useNbaDataStore } from '../stores/nba-data.js';
 import { useGameStore } from '../stores/game.js';
 import PlayerDashboard from './PlayerDashboard.vue';
@@ -24,6 +24,8 @@ const pct = (value) => {
 };
 const number = (value) => value === null || value === undefined ? '-' : Number(value).toFixed(1);
 const dateLabel = (value) => value ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeZone: 'Asia/Shanghai' }).format(new Date(value)) : '-';
+const leaderValue = (player) => nba.selectedLeaderMetric?.percent ? pct(player.leaderValue) : number(player.leaderValue);
+const leaderMetricLabel = computed(() => nba.selectedLeaderMetric?.label || '赛季排行榜');
 
 const shareReady = ref(false);
 const validViews = new Set(tabs.map(([key]) => key));
@@ -134,8 +136,13 @@ onBeforeUnmount(clearShareUrl);
         </div>
 
         <div v-else-if="nba.view === 'leaders'" class="data-view">
-          <div class="view-title"><div><span class="view-kicker">LEAGUE LEADERS</span><h3>赛季排行榜</h3></div><span class="view-count">Top 5</span></div>
-          <div class="leader-grid"><article v-for="leader in nba.leaderCards" :key="leader.field" class="leader-card"><h4>{{ leader.label }}</h4><div v-for="(player, index) in leader.rows" :key="`${leader.field}-${player.fullName}`" class="leader-row"><span class="leader-rank">{{ String(index + 1).padStart(2, '0') }}</span><span class="leader-player"><strong>{{ player.fullName }}</strong><small>{{ player.teamId?.toUpperCase() }}</small></span><b>{{ player.leaderValue ?? number(player.stats?.[leader.field]) }}</b></div></article></div>
+          <div class="view-title"><div><span class="view-kicker">LEAGUE LEADERS</span><h3>赛季排行榜</h3></div><span class="view-count">Top {{ nba.leaderRows.length }}</span></div>
+          <div class="leader-toolbar" aria-label="排行榜筛选">
+            <label class="leader-filter" for="leader-metric"><span>统计指标</span><select id="leader-metric" v-model="nba.leaderMetric"><option v-for="metric in nba.leaderMetricOptions" :key="metric.value" :value="metric.value">{{ metric.label }}</option></select></label>
+            <label class="leader-filter" for="leader-min-games"><span>最低出场</span><select id="leader-min-games" v-model.number="nba.leaderMinGames"><option :value="0">不限</option><option :value="10">10 场</option><option :value="20">20 场</option><option :value="40">40 场</option></select></label>
+            <label v-if="nba.leaderPositions.length > 1" class="leader-filter" for="leader-position"><span>位置</span><select id="leader-position" v-model="nba.leaderPosition"><option v-for="position in nba.leaderPositions" :key="position.value" :value="position.value">{{ position.label }}</option></select></label>
+          </div>
+          <article class="leader-card leader-card-wide"><div class="leader-card-heading"><h4>{{ leaderMetricLabel }}</h4><span>{{ nba.leaderEligibleCount }} 人符合条件</span></div><div v-if="nba.leaderRows.length" class="leader-list"><div v-for="(player, index) in nba.leaderRows" :key="`${nba.leaderMetric}-${player.id}-${player.teamId}`" class="leader-row leader-row-clickable" tabindex="0" role="button" :title="`查看 ${player.fullName} 球员看板`" @click="nba.openPlayer(player.id)" @keydown.enter="nba.openPlayer(player.id)" @keydown.space.prevent="nba.openPlayer(player.id)"><span class="leader-rank">{{ String(index + 1).padStart(2, '0') }}</span><span class="leader-player"><strong>{{ player.fullName }}</strong><small>{{ player.teamId?.toUpperCase() || '-' }}<template v-if="player.position"> · {{ player.position }}</template></small></span><b>{{ leaderValue(player) }}</b></div></div><div v-else class="leader-empty">暂无符合当前筛选条件的球员</div></article>
         </div>
 
         <div v-else class="data-view">
@@ -145,7 +152,7 @@ onBeforeUnmount(clearShareUrl);
           <div v-else-if="nba.historyError" class="data-alert">{{ nba.historyError }}</div>
           <template v-else>
             <div class="history-summary"><span>赛季</span><strong>{{ nba.selectedSeason || '-' }}</strong><span>球员记录</span><strong>{{ nba.players.length }}</strong><span>球队记录</span><strong>{{ nba.teams.length }}</strong></div>
-            <div class="leader-grid"><article v-for="leader in nba.sortedLeaders" :key="leader.field" class="leader-card"><h4>{{ leader.label }}</h4><div v-for="(player, index) in leader.rows" :key="`${leader.field}-${player.id}`" class="leader-row"><span class="leader-rank">{{ String(index + 1).padStart(2, '0') }}</span><span class="leader-player"><strong>{{ player.fullName }}</strong><small>{{ player.teamId?.toUpperCase() }}</small></span><b>{{ number(player.stats?.[leader.field]) }}</b></div></article></div>
+            <div class="leader-grid"><article v-for="leader in nba.sortedLeaders" :key="leader.field" class="leader-card"><h4>{{ leader.label }}</h4><div v-for="(player, index) in leader.rows" :key="`${leader.field}-${player.id}`" class="leader-row leader-row-clickable" tabindex="0" role="button" :title="`查看 ${player.fullName} 球员看板`" @click="nba.openPlayer(player.id)" @keydown.enter="nba.openPlayer(player.id)" @keydown.space.prevent="nba.openPlayer(player.id)"><span class="leader-rank">{{ String(index + 1).padStart(2, '0') }}</span><span class="leader-player"><strong>{{ player.fullName }}</strong><small>{{ player.teamId?.toUpperCase() }}</small></span><b>{{ number(player.stats?.[leader.field]) }}</b></div></article></div>
             <div class="archive-section-heading"><div><span class="view-kicker">PLAYER ARCHIVE</span><h4>赛季球员记录</h4></div><span>{{ nba.players.length }} 条记录</span></div>
             <label class="data-search"><span>筛选记录</span><input v-model="nba.search" type="search" placeholder="姓名、球队或位置" /></label>
             <div class="player-table-wrap"><table class="player-table"><thead><tr><th>球员</th><th>球队</th><th>场次</th><th>得分</th><th>篮板</th><th>助攻</th><th>命中率</th><th aria-label="操作"></th></tr></thead><tbody><tr v-for="player in nba.visiblePlayers" :key="`${player.id}-${player.teamId}`" class="player-row-clickable" tabindex="0" role="button" @click="nba.openPlayer(player.id)" @keydown.enter="nba.openPlayer(player.id)"><td><strong>{{ player.fullName }}</strong><small>{{ player.age ? `${Math.round(player.age)} 岁` : '—' }}</small></td><td>{{ player.teamId?.toUpperCase() || '-' }}</td><td>{{ player.stats?.gp ?? '-' }}</td><td>{{ number(player.stats?.points) }}</td><td>{{ number(player.stats?.rebounds) }}</td><td>{{ number(player.stats?.assists) }}</td><td>{{ pct(player.stats?.fgPct) }}</td><td class="player-open">查看</td></tr></tbody></table></div>
