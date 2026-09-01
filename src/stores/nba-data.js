@@ -15,11 +15,17 @@ export const useNbaDataStore = defineStore('nba-data', () => {
   const view = ref('games');
   const search = ref('');
   const selectedSeason = ref('');
+  const selectedPlayerId = ref('');
 
   const seasons = computed(() => snapshot.value?.manifest?.history?.seasons || []);
   const currentPlayers = computed(() => snapshot.value?.players || []);
   const currentTeams = computed(() => snapshot.value?.teams || []);
   const currentGames = computed(() => snapshot.value?.games?.games || []);
+  const selectedPlayer = computed(() => {
+    if (!selectedPlayerId.value) return null;
+    if (selectedPlayerId.value === '2544' && featuredPlayer.value) return featuredPlayer.value;
+    return currentPlayers.value.find((player) => String(player.id) === String(selectedPlayerId.value)) || null;
+  });
   const activeHistory = computed(() => selectedSeason.value ? history.value[selectedSeason.value] : null);
   const players = computed(() => view.value === 'history' && activeHistory.value ? activeHistory.value.players : currentPlayers.value);
   const teams = computed(() => view.value === 'history' && activeHistory.value ? activeHistory.value.teams : currentTeams.value);
@@ -99,9 +105,20 @@ export const useNbaDataStore = defineStore('nba-data', () => {
     }
   }
 
+  function openPlayer(playerId) {
+    selectedPlayerId.value = String(playerId);
+    view.value = 'player';
+    search.value = '';
+  }
+
+  function closePlayer() {
+    selectedPlayerId.value = '';
+    view.value = 'players';
+  }
+
   return {
-    snapshot, loading, historyLoading, featuredPlayer, featuredLoading, featuredError, error, historyError, view, search, selectedSeason,
-    seasons, players, teams, currentTeams, currentGames, filteredPlayers, sortedLeaders,
-    dataStatus, generatedAt, refresh, loadHistorySeason, selectSeason, showView
+    snapshot, loading, historyLoading, featuredPlayer, featuredLoading, featuredError, error, historyError, view, search, selectedSeason, selectedPlayerId,
+    selectedPlayer, seasons, players, teams, currentTeams, currentGames, filteredPlayers, sortedLeaders,
+    dataStatus, generatedAt, refresh, loadHistorySeason, selectSeason, showView, openPlayer, closePlayer
   };
 });

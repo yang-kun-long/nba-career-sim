@@ -2,6 +2,7 @@ node_modules/
 __pycache__/
 *.py[cod]
 dist/
+artifacts/
 playwright-report/
 test-results/
 .wrangler/
