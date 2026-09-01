@@ -246,7 +246,7 @@ def replace_generated_directory(data_root: Path, relative: Path, payloads: dict[
             shutil.rmtree(temp_root)
 
 
-def update_manifest(data_root: Path) -> None:
+def update_manifest(data_root: Path, history_updated_at: str = "") -> None:
     path = data_root / "manifest.json"
     manifest = read_json(path)
     history = manifest.setdefault("history", {})
@@ -256,11 +256,45 @@ def update_manifest(data_root: Path) -> None:
         "careerSchemaVersion": 2,
         "playerStatsMode": "perGame",
     })
+    if history_updated_at:
+        manifest["historyUpdatedAt"] = history_updated_at
     write_json(path, manifest)
 
 
 def validate(data_root: Path) -> tuple[int, int]:
     manifest = read_json(data_root / "manifest.json")
+    if manifest.get("sourceStatus") not in {"official", "partial"}:
+        raise RuntimeError("manifest sourceStatus is invalid")
+    if not manifest.get("generatedAt") or not manifest.get("season"):
+        raise RuntimeError("manifest snapshot metadata is incomplete")
+
+    current_players = read_json(data_root / "players" / "index.json").get("players", [])
+    current_teams = read_json(data_root / "teams" / "index.json").get("teams", [])
+    current_games = read_json(data_root / "games" / "today.json").get("games", [])
+    current_leaders = read_json(data_root / "leaders" / "index.json").get("leaders", {})
+    if len(current_players) < 300:
+        raise RuntimeError("current player snapshot is unexpectedly small")
+    if len(current_teams) != 30:
+        raise RuntimeError("current team snapshot must contain 30 teams")
+    leader_count = sum(len(rows) for rows in current_leaders.values())
+    if leader_count < 15:
+        raise RuntimeError("current leaderboard snapshot is unexpectedly small")
+
+    health = manifest.get("dataHealth") or {}
+    health_counts = {
+        "games": len(current_games),
+        "teams": len(current_teams),
+        "players": len(current_players),
+        "leaders": leader_count,
+    }
+    for key in ("snapshot", "games", "teams", "players", "leaders", "featuredPlayer"):
+        status = (health.get(key) or {}).get("status")
+        if status not in {"ok", "partial", "empty"}:
+            raise RuntimeError(f"manifest dataHealth.{key}.status is invalid")
+    for key, count in health_counts.items():
+        if health[key].get("count") != count:
+            raise RuntimeError(f"manifest dataHealth.{key}.count does not match its file")
+
     history = manifest.get("history") or {}
     required = {
         "playerCareersPattern": "/data/history/player-careers/{playerId}.json",
@@ -315,14 +349,16 @@ def main() -> int:
         else:
             manifest = read_json(data_root / "manifest.json")
             season = args.season or str(manifest.get("season") or "")
+            history_updated_at = ""
             if args.merge_current:
                 if not season:
                     raise RuntimeError("current season is required")
                 merge_current_season(data_root, season)
+                history_updated_at = str(manifest.get("generatedAt") or "")
             normalize_featured_player(data_root)
             replace_generated_directory(data_root, Path("history/player-careers"), build_player_payloads(data_root))
             replace_generated_directory(data_root, Path("history/team-careers"), build_team_payloads(data_root))
-            update_manifest(data_root)
+            update_manifest(data_root, history_updated_at)
             player_count, team_count = validate(data_root)
     except Exception as error:
         print(f"::error::{error}", file=sys.stderr)

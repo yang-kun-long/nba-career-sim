@@ -9,6 +9,37 @@
   "warnings": [
     "live scoreboard unavailable: live scoreboard failed after 3 attempts: Expecting value: line 1 column 1 (char 0)"
   ],
+  "dataHealth": {
+    "snapshot": {
+      "status": "partial",
+      "updatedAt": "2026-09-01T04:39:38Z"
+    },
+    "games": {
+      "status": "partial",
+      "updatedAt": "2026-09-01T04:39:38Z",
+      "count": 0,
+      "warning": "live scoreboard unavailable"
+    },
+    "teams": {
+      "status": "ok",
+      "updatedAt": "2026-09-01T04:39:38Z",
+      "count": 30
+    },
+    "players": {
+      "status": "ok",
+      "updatedAt": "2026-09-01T04:39:38Z",
+      "count": 582
+    },
+    "leaders": {
+      "status": "ok",
+      "updatedAt": "2026-09-01T04:39:38Z",
+      "count": 30
+    },
+    "featuredPlayer": {
+      "status": "ok",
+      "updatedAt": "2026-09-01T04:39:38Z"
+    }
+  },
   "files": {
     "games": "/data/games/today.json",
     "teams": "/data/teams/index.json",

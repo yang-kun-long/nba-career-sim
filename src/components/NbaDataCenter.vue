@@ -39,7 +39,7 @@ onMounted(() => nba.refresh());
         </div>
         <button class="btn-sm data-refresh" :disabled="nba.loading" title="重新读取数据" @click="nba.refresh">{{ nba.loading ? '读取中…' : '刷新快照' }}</button>
       </div>
-      <div class="data-meta"><span class="status-dot" :class="{ official: nba.dataStatus === '官方快照', partial: nba.dataStatus.includes('部分') }"></span>{{ nba.dataStatus }} · {{ nba.generatedAt }} · 数据源：NBA.com</div>
+      <div class="data-meta"><span class="status-dot" :class="{ official: nba.dataStatus === '官方快照', partial: nba.dataStatus.includes('部分') }"></span><span>{{ nba.dataStatus }} · {{ nba.generatedAt }} · 数据源：NBA.com</span><div v-if="nba.dataHealth.length" class="data-health" aria-label="数据健康状态"><span v-for="item in nba.dataHealth" :key="item.key" class="health-chip" :class="`health-${item.status}`" :title="item.warning || `${item.label}数据${item.statusLabel}`"><i></i>{{ item.label }} {{ item.detail }}</span></div></div>
       <div v-if="nba.error" class="data-alert">{{ nba.error }}。当前页面会继续保留已加载内容。</div>
       <nav class="data-tabs" aria-label="NBA数据视图">
         <button v-for="tab in tabs" :key="tab[0]" class="data-tab" :class="{ active: nba.view === tab[0] }" @click="nba.showView(tab[0])">{{ tab[1] }}</button>
@@ -70,7 +70,7 @@ onMounted(() => nba.refresh());
         </div>
 
         <div v-else-if="nba.view === 'player'" class="data-view player-view">
-          <PlayerDashboard v-if="nba.selectedPlayer" :player="nba.selectedPlayer" :loading="nba.playerLoading" :error="nba.playerError" @back="nba.closePlayer" />
+          <PlayerDashboard v-if="nba.selectedPlayer" :player="nba.selectedPlayer" :league-players="nba.currentPlayers" :loading="nba.playerLoading" :error="nba.playerError" @back="nba.closePlayer" />
           <div v-else class="data-loading compact">正在读取球员档案…</div>
         </div>
 

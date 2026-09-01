@@ -107,6 +107,24 @@ export const useNbaDataStore = defineStore('nba-data', () => {
     return '本地种子';
   });
   const generatedAt = computed(() => formatSnapshotDate(snapshot.value?.manifest?.generatedAt));
+  const dataHealth = computed(() => {
+    const health = snapshot.value?.manifest?.dataHealth;
+    if (!health) return [];
+    const labels = [
+      ['games', '比赛'],
+      ['teams', '球队'],
+      ['players', '球员'],
+      ['leaders', '榜单'],
+      ['featuredPlayer', '精选档案']
+    ];
+    return labels.map(([key, label]) => {
+      const item = health[key] || {};
+      const status = item.status || 'unknown';
+      const statusLabel = status === 'ok' ? '正常' : status === 'empty' ? '暂无' : status === 'partial' ? '部分' : '未知';
+      const detail = item.count === undefined ? statusLabel : `${statusLabel} ${item.count}`;
+      return { key, label, status, statusLabel, detail, warning: item.warning || '' };
+    });
+  });
 
   async function refresh() {
     if (loading.value) return;
@@ -390,6 +408,6 @@ export const useNbaDataStore = defineStore('nba-data', () => {
   return {
     snapshot, loading, historyLoading, featuredPlayer, featuredLoading, featuredError, error, historyError, view, search, playerListLimit, selectedSeason, selectedPlayerId,
     playerLoading, playerError, selectedPlayer, selectedTeamId, selectedTeam, selectedTeamRoster, teamLoading, teamError, seasons, players, teams, currentTeams, currentGames, filteredPlayers, visiblePlayers, hasMorePlayers, sortedLeaders, leaderCards, overviewStats,
-    dataStatus, generatedAt, refresh, loadHistorySeason, selectSeason, showView, showMorePlayers, openPlayer, closePlayer, loadPlayerHistory, openTeam, closeTeam, loadTeamHistory
+    dataStatus, generatedAt, dataHealth, refresh, loadHistorySeason, selectSeason, showView, showMorePlayers, openPlayer, closePlayer, loadPlayerHistory, openTeam, closeTeam, loadTeamHistory
   };
 });

@@ -8,7 +8,7 @@ on:
       season:
         description: NBA season passed to stats.nba.com (for example 2025-26)
         required: false
-        default: 2025-26
+        default: ''
 
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      NBA_SEASON: ${{ github.event.inputs.season || vars.NBA_SEASON || '2025-26' }}
+      NBA_SEASON: ${{ github.event.inputs.season || vars.NBA_SEASON || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5

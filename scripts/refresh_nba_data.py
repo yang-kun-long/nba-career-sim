@@ -22,11 +22,18 @@ from typing import Any
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("public/data"))
-    parser.add_argument("--season", default="2025-26")
+    parser.add_argument("--season", default="", help="NBA season (defaults to the current season)")
     parser.add_argument("--timeout", type=int, default=30)
     parser.add_argument("--retries", type=int, default=3)
     parser.add_argument("--sleep", type=float, default=1.5)
     return parser.parse_args()
+
+
+def current_nba_season(today: date | None = None) -> str:
+    """Return the NBA season containing the given calendar date."""
+    current = today or date.today()
+    start_year = current.year if current.month >= 10 else current.year - 1
+    return f"{start_year}-{str(start_year + 1)[-2:]}"
 
 
 def now_iso() -> str:
@@ -204,6 +211,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
     team_by_nba_id = {str(item["id"]): item for item in team_rows}
     team_by_abbr = {item["abbreviation"]: item for item in team_rows}
 
+    scoreboard_warning = ""
     try:
         standings = frame_rows(call_with_retry(
             leaguestandings.LeagueStandings,
@@ -310,13 +318,16 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
                 "away": {"name": away.get("teamName", "客队"), "city": away.get("teamCity", ""), "abbreviation": away.get("teamTricode", ""), "score": away.get("score")},
             })
     except Exception as error:
-        warnings.append(f"live scoreboard unavailable: {error}")
+        scoreboard_warning = f"live scoreboard unavailable: {error}"
+        warnings.append(scoreboard_warning)
         games = []
 
+    featured_warning = ""
     try:
         featured_player = fetch_featured_player(args, generated_at)
     except Exception as error:
-        warnings.append(f"featured player unavailable: {error}")
+        featured_warning = f"featured player unavailable: {error}"
+        warnings.append(featured_warning)
         featured_player = None
 
     leaders = {}
@@ -328,6 +339,29 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
 
     data_version = f"{args.season}-{date.today().isoformat()}"
     common = {"schemaVersion": 1, "dataVersion": data_version, "generatedAt": generated_at}
+    data_health = {
+        "snapshot": {"status": "partial" if warnings else "ok", "updatedAt": generated_at},
+        "games": {
+            "status": "partial" if scoreboard_warning else ("empty" if not games else "ok"),
+            "updatedAt": generated_at,
+            "count": len(games),
+        },
+        "teams": {"status": "ok", "updatedAt": generated_at, "count": len(teams)},
+        "players": {"status": "ok", "updatedAt": generated_at, "count": len(players)},
+        "leaders": {
+            "status": "ok",
+            "updatedAt": generated_at,
+            "count": sum(len(rows) for rows in leaders.values()),
+        },
+        "featuredPlayer": {
+            "status": "ok" if featured_player else "partial",
+            "updatedAt": generated_at,
+        },
+    }
+    if scoreboard_warning:
+        data_health["games"]["warning"] = scoreboard_warning
+    if featured_warning:
+        data_health["featuredPlayer"]["warning"] = featured_warning
     return {
         "manifest": {
             **common,
@@ -336,6 +370,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
             "season": args.season,
             "timezone": "UTC",
             "warnings": warnings,
+            "dataHealth": data_health,
             "files": {
                 "games": "/data/games/today.json",
                 "teams": "/data/teams/index.json",
@@ -401,6 +436,7 @@ def write_current_snapshot(output: Path, snapshot: dict[str, Any]) -> None:
 
 def main() -> int:
     args = parse_args()
+    args.season = args.season or current_nba_season()
     try:
         snapshot = build_snapshot(args)
     except Exception as error:

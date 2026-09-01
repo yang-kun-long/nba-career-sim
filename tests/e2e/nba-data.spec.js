@@ -15,6 +15,7 @@ test('opens a regular player history dashboard without mobile page overflow', as
   await expect(page.locator('.dashboard-table tbody tr')).toHaveCount(4);
   await expect(page.locator('.dashboard-tabs .data-tab').nth(1)).toBeDisabled();
   await expect(page.locator('.dashboard-tabs .data-tab').nth(2)).toBeDisabled();
+  await expect(page.locator('.radar-label').first()).toContainText('%');
 
   const widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: window.innerWidth }));
   expect(widths.body).toBe(widths.viewport);
@@ -53,6 +54,9 @@ test('provides a usable overview, official leaders, and season archive tables', 
   await page.getByRole('button', { name: 'NBA 数据中心' }).click();
   await expect(page.locator('.data-overview-grid')).toBeVisible();
   await expect(page.locator('.overview-card')).toHaveCount(4);
+  await expect(page.locator('.data-health')).toBeVisible();
+  await expect(page.locator('.health-ok')).toHaveCount(4);
+  await expect(page.locator('.health-partial')).toHaveCount(1);
 
   await page.getByRole('button', { name: '排行榜', exact: true }).click();
   await expect(page.locator('.leader-card').first()).toContainText('Luka');

@@ -1658,12 +1658,44 @@ button:disabled:hover {
 .data-meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 7px;
   color: var(--fg3);
   border-bottom: 1px solid var(--border);
   padding: 6px 0 14px;
   font-size: 0.76rem;
 }
+
+.data-health {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.health-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  color: var(--fg3);
+  font-size: 0.66rem;
+  white-space: nowrap;
+}
+
+.health-chip i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fg3);
+}
+
+.health-ok i { background: var(--green); }
+.health-empty i { background: var(--fg3); }
+.health-partial i { background: var(--accent2); }
+.health-unknown i { background: var(--red); }
 
 .status-dot {
   width: 7px;
@@ -1917,7 +1949,7 @@ button:disabled:hover {
 .radar-value { fill: rgba(245,132,38,.27); stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
 .radar-center { fill: var(--accent2); }
 .radar-label { fill: var(--fg2); font-family: 'Rajdhani', sans-serif; font-size: 12px; text-anchor: middle; }
-.line-chart-wrap { width: 100%; overflow-x: auto; padding-bottom: 3px; }
+.line-chart-wrap { width: 100%; min-height: 286px; overflow-x: auto; padding-bottom: 3px; }
 .line-chart { display: block; width: 100%; min-width: 600px; height: 250px; overflow: visible; }
 .chart-grid-line { stroke: rgba(139,147,167,.18); stroke-width: 1; stroke-dasharray: 3 4; }
 .chart-y-label, .chart-x-label { fill: var(--fg3); font-family: 'Rajdhani', sans-serif; font-size: 10px; text-anchor: end; }
@@ -1926,8 +1958,11 @@ button:disabled:hover {
 .points-line { stroke: var(--accent); }
 .rebounds-line { stroke: var(--green); }
 .assists-line { stroke: var(--blue); }
-.chart-dot { stroke: var(--bg); stroke-width: 1; }
+.chart-dot { stroke: var(--bg); stroke-width: 1; cursor: pointer; }
+.chart-dot:focus-visible { outline: none; stroke: #fff; stroke-width: 2; }
 .points-dot { fill: var(--accent); }
+.chart-detail { position: sticky; left: 0; display: flex; align-items: center; gap: 12px; width: max-content; min-height: 30px; padding: 5px 8px; border-left: 2px solid var(--accent); background: rgba(10,14,26,.72); color: var(--fg2); font-size: .68rem; }
+.chart-detail strong { color: var(--fg); font-family: 'Orbitron', sans-serif; font-size: .66rem; }
 .chart-legend { display: flex; gap: 9px; color: var(--fg2); font-size: 0.66rem; white-space: nowrap; }
 .chart-legend span::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 3px; border-radius: 50%; background: currentColor; }
 .legend-points { color: var(--accent); }
@@ -1968,6 +2003,7 @@ button:disabled:hover {
   .data-heading h2 { font-size: 1.12rem; }
   .data-subtitle { line-height: 1.5; }
   .data-meta { align-items: flex-start; line-height: 1.5; }
+  .data-health { width: 100%; margin-left: 0; }
   .featured-actions { align-items: flex-start; flex-direction: column; }
   .featured-actions .featured-tabs { width: 100%; }
   .dashboard-hero { align-items: flex-start; flex-direction: column; padding: 14px; }
