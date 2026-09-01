@@ -4,7 +4,7 @@ test('opens a regular player history dashboard without mobile page overflow', as
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.getByRole('button', { name: 'NBA 数据中心' }).click();
-  await page.getByRole('button', { name: '球员' }).click();
+  await page.getByRole('button', { name: '球员', exact: true }).click();
   await expect(page.locator('.player-table')).toBeVisible();
 
   const lawson = page.locator('.player-row-clickable').filter({ hasText: 'A.J. Lawson' }).first();
@@ -23,10 +23,28 @@ test('opens a regular player history dashboard without mobile page overflow', as
 test('keeps the featured LeBron archive separate from season snapshots', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'NBA 数据中心' }).click();
-  await page.getByRole('button', { name: '球员' }).click();
+  await page.getByRole('button', { name: '球员', exact: true }).click();
   await expect(page.locator('.featured-player')).toBeVisible();
   await page.getByRole('button', { name: '打开完整球员看板' }).click();
   await expect(page.locator('.dashboard-identity h3')).toHaveText('LeBron James');
   await expect(page.locator('.dashboard-source')).toContainText('生涯档案');
   await expect(page.locator('.dashboard-table tbody tr')).toHaveCount(23);
+});
+
+test('provides a usable overview, official leaders, and season archive tables', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'NBA 数据中心' }).click();
+  await expect(page.locator('.data-overview-grid')).toBeVisible();
+  await expect(page.locator('.overview-card')).toHaveCount(4);
+
+  await page.getByRole('button', { name: '排行榜', exact: true }).click();
+  await expect(page.locator('.leader-card').first()).toContainText('Luka');
+
+  await page.getByRole('button', { name: '历史赛季', exact: true }).click();
+  await expect(page.locator('.archive-section-heading').first()).toContainText('赛季球员记录');
+  await expect(page.locator('.archive-team-grid .team-card')).toHaveCount(30);
+  await expect(page.locator('.archive-section-heading').nth(1)).toContainText('赛季球队记录');
+  const widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: window.innerWidth }));
+  expect(widths.body).toBe(widths.viewport);
 });

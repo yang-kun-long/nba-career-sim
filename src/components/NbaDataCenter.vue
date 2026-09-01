@@ -9,6 +9,7 @@ const game = useGameStore();
 const featuredTab = ref('regularSeason');
 const featuredTabs = [['regularSeason', '常规赛'], ['playoffs', '季后赛'], ['allStar', '全明星']];
 const tabs = [
+  ['overview', '总览'],
   ['games', '今日比赛'],
   ['teams', '球队'],
   ['players', '球员'],
@@ -45,7 +46,18 @@ onMounted(() => nba.refresh());
 
       <div v-if="nba.loading && !nba.snapshot" class="data-loading">正在读取官方快照…</div>
       <template v-else>
-        <div v-if="nba.view === 'games'" class="data-view">
+        <div v-if="nba.view === 'overview'" class="data-view">
+          <div class="view-title"><div><span class="view-kicker">DATA OVERVIEW</span><h3>数据总览</h3></div><span class="view-count">{{ nba.dataStatus }}</span></div>
+          <div class="data-overview-grid">
+            <button class="overview-card overview-card-primary" @click="nba.showView('games')"><span class="overview-label">今日比赛</span><strong>{{ nba.overviewStats.games }}</strong><small>{{ nba.overviewStats.games ? '场比赛已收录' : '当前没有比赛快照' }}</small><b>查看比赛 →</b></button>
+            <button class="overview-card" @click="nba.showView('players')"><span class="overview-label">球员索引</span><strong>{{ nba.overviewStats.players.toLocaleString('zh-CN') }}</strong><small>当前赛季球员记录</small><b>浏览球员 →</b></button>
+            <button class="overview-card" @click="nba.showView('teams')"><span class="overview-label">球队索引</span><strong>{{ nba.overviewStats.teams }}</strong><small>当前赛季球队记录</small><b>查看球队 →</b></button>
+            <button class="overview-card" @click="nba.showView('history')"><span class="overview-label">历史赛季</span><strong>{{ nba.overviewStats.seasons }}</strong><small>{{ nba.snapshot?.manifest?.history?.fromSeason }} 至 {{ nba.snapshot?.manifest?.history?.toSeason }}</small><b>进入档案 →</b></button>
+          </div>
+          <div class="overview-lanes"><article><span class="view-kicker">REFRESH PIPELINE</span><h4>数据更新</h4><p>每日由 GitHub Actions 拉取 NBA.com 快照，页面只读取版本化静态数据。</p><dl><div><dt>快照时间</dt><dd>{{ nba.generatedAt }}</dd></div><div><dt>历史基线</dt><dd>{{ nba.snapshot?.manifest?.history?.fromSeason }} - {{ nba.snapshot?.manifest?.history?.toSeason }}</dd></div><div><dt>数据状态</dt><dd>{{ nba.dataStatus }}</dd></div></dl></article><article><span class="view-kicker">FEATURED ARCHIVE</span><h4>詹姆斯完整档案</h4><p>独立保存常规赛、季后赛和全明星逐赛季数据，适合查看长期生涯轨迹。</p><button class="btn-sm" @click="nba.openPlayer('2544')">打开詹姆斯看板</button></article></div>
+        </div>
+
+        <div v-else-if="nba.view === 'games'" class="data-view">
           <div class="view-title"><div><span class="view-kicker">LIVE BOARD</span><h3>今日比赛</h3></div><span class="view-count">{{ nba.currentGames.length }} 场</span></div>
           <div v-if="!nba.currentGames.length" class="data-empty"><strong>今日暂无比赛</strong><span>{{ nba.snapshot?.games?.message || '等待下一次官方快照更新' }}</span></div>
           <div v-else class="game-grid"><article v-for="game in nba.currentGames" :key="game.id" class="game-card"><span class="game-status">{{ game.status }}</span><div class="game-team"><span>{{ game.away.name }}</span><b>{{ game.away.score ?? '-' }}</b></div><div class="game-team"><span>{{ game.home.name }}</span><b>{{ game.home.score ?? '-' }}</b></div><small>{{ dateLabel(game.startTime) }}</small></article></div>
@@ -72,13 +84,14 @@ onMounted(() => nba.refresh());
           <div v-else-if="nba.featuredLoading" class="data-loading compact">正在读取詹姆斯全生涯档案…</div>
           <div v-else-if="nba.featuredError" class="data-alert">{{ nba.featuredError }}</div>
           <label class="data-search"><span>搜索球员</span><input v-model="nba.search" type="search" placeholder="姓名、球队或位置" /></label>
-          <div class="player-table-wrap"><table class="player-table"><thead><tr><th>球员</th><th>球队</th><th>位置</th><th>场次</th><th>得分</th><th>篮板</th><th>助攻</th><th>命中率</th><th aria-label="操作"></th></tr></thead><tbody><tr v-for="player in nba.filteredPlayers.slice(0, 80)" :key="`${player.id}-${player.teamId}`" class="player-row-clickable" tabindex="0" role="button" @click="nba.openPlayer(player.id)" @keydown.enter="nba.openPlayer(player.id)"><td><strong>{{ player.fullName }}</strong><small>{{ player.age ? `${Math.round(player.age)} 岁` : '—' }}</small></td><td>{{ player.teamId?.toUpperCase() || '-' }}</td><td>{{ player.position || '-' }}</td><td>{{ player.stats?.gp ?? '-' }}</td><td>{{ number(player.stats?.points) }}</td><td>{{ number(player.stats?.rebounds) }}</td><td>{{ number(player.stats?.assists) }}</td><td>{{ pct(player.stats?.fgPct) }}</td><td class="player-open">查看</td></tr></tbody></table></div>
+          <div class="player-table-wrap"><table class="player-table"><thead><tr><th>球员</th><th>球队</th><th>位置</th><th>场次</th><th>得分</th><th>篮板</th><th>助攻</th><th>命中率</th><th aria-label="操作"></th></tr></thead><tbody><tr v-for="player in nba.visiblePlayers" :key="`${player.id}-${player.teamId}`" class="player-row-clickable" tabindex="0" role="button" @click="nba.openPlayer(player.id)" @keydown.enter="nba.openPlayer(player.id)"><td><strong>{{ player.fullName }}</strong><small>{{ player.age ? `${Math.round(player.age)} 岁` : '—' }}</small></td><td>{{ player.teamId?.toUpperCase() || '-' }}</td><td>{{ player.position || '-' }}</td><td>{{ player.stats?.gp ?? '-' }}</td><td>{{ number(player.stats?.points) }}</td><td>{{ number(player.stats?.rebounds) }}</td><td>{{ number(player.stats?.assists) }}</td><td>{{ pct(player.stats?.fgPct) }}</td><td class="player-open">查看</td></tr></tbody></table></div>
+          <div v-if="nba.hasMorePlayers" class="data-more"><span>已显示 {{ nba.visiblePlayers.length }} / {{ nba.filteredPlayers.length }} 人</span><button class="btn-sm" @click="nba.showMorePlayers">加载更多球员</button></div>
           <div v-if="!nba.filteredPlayers.length" class="data-empty">没有匹配的球员</div>
         </div>
 
         <div v-else-if="nba.view === 'leaders'" class="data-view">
           <div class="view-title"><div><span class="view-kicker">LEAGUE LEADERS</span><h3>赛季排行榜</h3></div><span class="view-count">Top 5</span></div>
-          <div class="leader-grid"><article v-for="leader in nba.sortedLeaders" :key="leader.field" class="leader-card"><h4>{{ leader.label }}</h4><div v-for="(player, index) in leader.rows" :key="`${leader.field}-${player.id}`" class="leader-row"><span class="leader-rank">0{{ index + 1 }}</span><span class="leader-player"><strong>{{ player.fullName }}</strong><small>{{ player.teamId?.toUpperCase() }}</small></span><b>{{ number(player.stats?.[leader.field]) }}</b></div></article></div>
+          <div class="leader-grid"><article v-for="leader in nba.leaderCards" :key="leader.field" class="leader-card"><h4>{{ leader.label }}</h4><div v-for="(player, index) in leader.rows" :key="`${leader.field}-${player.fullName}`" class="leader-row"><span class="leader-rank">{{ String(index + 1).padStart(2, '0') }}</span><span class="leader-player"><strong>{{ player.fullName }}</strong><small>{{ player.teamId?.toUpperCase() }}</small></span><b>{{ player.leaderValue ?? number(player.stats?.[leader.field]) }}</b></div></article></div>
         </div>
 
         <div v-else class="data-view">
@@ -88,7 +101,13 @@ onMounted(() => nba.refresh());
           <div v-else-if="nba.historyError" class="data-alert">{{ nba.historyError }}</div>
           <template v-else>
             <div class="history-summary"><span>赛季</span><strong>{{ nba.selectedSeason || '-' }}</strong><span>球员记录</span><strong>{{ nba.players.length }}</strong><span>球队记录</span><strong>{{ nba.teams.length }}</strong></div>
-            <div class="leader-grid"><article v-for="leader in nba.sortedLeaders" :key="leader.field" class="leader-card"><h4>{{ leader.label }}</h4><div v-for="(player, index) in leader.rows" :key="`${leader.field}-${player.id}`" class="leader-row"><span class="leader-rank">0{{ index + 1 }}</span><span class="leader-player"><strong>{{ player.fullName }}</strong><small>{{ player.teamId?.toUpperCase() }}</small></span><b>{{ number(player.stats?.[leader.field]) }}</b></div></article></div>
+            <div class="leader-grid"><article v-for="leader in nba.sortedLeaders" :key="leader.field" class="leader-card"><h4>{{ leader.label }}</h4><div v-for="(player, index) in leader.rows" :key="`${leader.field}-${player.id}`" class="leader-row"><span class="leader-rank">{{ String(index + 1).padStart(2, '0') }}</span><span class="leader-player"><strong>{{ player.fullName }}</strong><small>{{ player.teamId?.toUpperCase() }}</small></span><b>{{ number(player.stats?.[leader.field]) }}</b></div></article></div>
+            <div class="archive-section-heading"><div><span class="view-kicker">PLAYER ARCHIVE</span><h4>赛季球员记录</h4></div><span>{{ nba.players.length }} 条记录</span></div>
+            <label class="data-search"><span>筛选记录</span><input v-model="nba.search" type="search" placeholder="姓名、球队或位置" /></label>
+            <div class="player-table-wrap"><table class="player-table"><thead><tr><th>球员</th><th>球队</th><th>场次</th><th>得分</th><th>篮板</th><th>助攻</th><th>命中率</th><th aria-label="操作"></th></tr></thead><tbody><tr v-for="player in nba.visiblePlayers" :key="`${player.id}-${player.teamId}`" class="player-row-clickable" tabindex="0" role="button" @click="nba.openPlayer(player.id)" @keydown.enter="nba.openPlayer(player.id)"><td><strong>{{ player.fullName }}</strong><small>{{ player.age ? `${Math.round(player.age)} 岁` : '—' }}</small></td><td>{{ player.teamId?.toUpperCase() || '-' }}</td><td>{{ player.stats?.gp ?? '-' }}</td><td>{{ number(player.stats?.points) }}</td><td>{{ number(player.stats?.rebounds) }}</td><td>{{ number(player.stats?.assists) }}</td><td>{{ pct(player.stats?.fgPct) }}</td><td class="player-open">查看</td></tr></tbody></table></div>
+            <div v-if="nba.hasMorePlayers" class="data-more"><span>已显示 {{ nba.visiblePlayers.length }} / {{ nba.filteredPlayers.length }} 人</span><button class="btn-sm" @click="nba.showMorePlayers">加载更多记录</button></div>
+            <div class="archive-section-heading"><div><span class="view-kicker">TEAM ARCHIVE</span><h4>赛季球队记录</h4></div><span>{{ nba.teams.length }} 支球队</span></div>
+            <div class="team-grid archive-team-grid"><article v-for="team in nba.teams" :key="team.id" class="team-card"><div class="team-mark" :style="{ background: team.color || '#687083' }">{{ team.abbreviation || team.id?.toUpperCase() }}</div><div class="team-copy"><strong>{{ team.name }}</strong><span>{{ team.city || 'NBA' }}</span></div><div class="team-record"><b>{{ team.record?.wins ?? '-' }} - {{ team.record?.losses ?? '-' }}</b><small>{{ pct(team.record?.winPct) }}</small></div></article></div>
           </template>
         </div>
       </template>

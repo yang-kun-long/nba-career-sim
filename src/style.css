@@ -1767,6 +1767,28 @@ button:disabled:hover {
 .data-loading.compact { min-height: 100px; }
 .data-empty strong { color: var(--fg); font-size: 1rem; }
 
+.data-overview-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.overview-card { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-height: 156px; padding: 16px; border: 1px solid var(--glass-border); background: rgba(20, 28, 52, .5); color: var(--fg); text-align: left; cursor: pointer; transition: border-color .2s, transform .2s, background .2s; }
+.overview-card:hover { border-color: var(--accent); background: rgba(245, 132, 38, .08); transform: translateY(-2px); }
+.overview-card-primary { border-color: rgba(245, 132, 38, .4); }
+.overview-label { color: var(--fg2); font-size: .76rem; }
+.overview-card strong { margin-top: auto; color: var(--accent); font-family: 'Orbitron', sans-serif; font-size: 1.8rem; }
+.overview-card small { color: var(--fg3); font-size: .7rem; }
+.overview-card b { margin-top: 8px; color: var(--accent2); font-size: .72rem; font-weight: 600; }
+.overview-lanes { display: grid; grid-template-columns: 1.2fr .8fr; gap: 12px; margin-top: 14px; }
+.overview-lanes article { padding: 16px; border: 1px solid var(--glass-border); background: rgba(20, 28, 52, .36); }
+.overview-lanes h4 { margin: 4px 0 6px; color: var(--fg); font-size: .95rem; }
+.overview-lanes p { color: var(--fg2); font-size: .76rem; line-height: 1.55; }
+.overview-lanes dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0 0; }
+.overview-lanes dl div { display: flex; flex-direction: column; gap: 3px; }
+.overview-lanes dt { color: var(--fg3); font-size: .66rem; }
+.overview-lanes dd { margin: 0; color: var(--fg); font-size: .72rem; }
+.data-more { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; color: var(--fg3); font-size: .72rem; }
+.archive-section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 24px 0 10px; padding-top: 16px; border-top: 1px solid var(--border); }
+.archive-section-heading h4 { margin: 3px 0 0; color: var(--fg); font-size: .95rem; }
+.archive-section-heading > span { color: var(--fg3); font-size: .7rem; }
+.archive-team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
 .game-grid,
 .team-grid,
 .leader-grid {
@@ -1924,6 +1946,9 @@ button:disabled:hover {
   .data-heading { flex-direction: column; gap: 10px; }
   .data-refresh { align-self: flex-start; }
   .game-grid, .leader-grid { grid-template-columns: 1fr; }
+  .data-overview-grid, .overview-lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .overview-lanes { grid-template-columns: 1fr; }
+  .overview-lanes dl { grid-template-columns: 1fr; }
   .team-grid { grid-template-columns: 1fr; }
   .data-footer { align-items: flex-start; flex-direction: column; }
   .history-summary { grid-template-columns: repeat(2, auto); }
@@ -1945,6 +1970,7 @@ button:disabled:hover {
   .dashboard-card { padding: 13px; }
   .dashboard-card-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
   .chart-legend { align-self: flex-start; }
+  .data-more { align-items: flex-start; flex-direction: column; }
 }
 
 /* ==========================================================

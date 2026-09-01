@@ -12,11 +12,13 @@ export const useNbaDataStore = defineStore('nba-data', () => {
   const featuredError = ref('');
   const error = ref('');
   const historyError = ref('');
-  const view = ref('games');
+  const view = ref('overview');
   const search = ref('');
+  const playerListLimit = ref(80);
   const selectedSeason = ref('');
   const selectedPlayerId = ref('');
   const playerProfiles = ref({});
+  const playerBases = ref({});
   const playerLoading = ref(false);
   const playerError = ref('');
   const playerLoadingIds = new Set();
@@ -29,7 +31,7 @@ export const useNbaDataStore = defineStore('nba-data', () => {
     if (!selectedPlayerId.value) return null;
     if (selectedPlayerId.value === '2544' && featuredPlayer.value) return featuredPlayer.value;
     if (playerProfiles.value[selectedPlayerId.value]) return playerProfiles.value[selectedPlayerId.value];
-    return currentPlayers.value.find((player) => String(player.id) === String(selectedPlayerId.value)) || null;
+    return currentPlayers.value.find((player) => String(player.id) === String(selectedPlayerId.value)) || playerBases.value[selectedPlayerId.value] || null;
   });
   const activeHistory = computed(() => selectedSeason.value ? history.value[selectedSeason.value] : null);
   const players = computed(() => view.value === 'history' && activeHistory.value ? activeHistory.value.players : currentPlayers.value);
@@ -39,6 +41,8 @@ export const useNbaDataStore = defineStore('nba-data', () => {
     if (!query) return players.value;
     return players.value.filter((player) => `${player.fullName} ${player.teamName} ${player.position}`.toLowerCase().includes(query));
   });
+  const visiblePlayers = computed(() => filteredPlayers.value.slice(0, playerListLimit.value));
+  const hasMorePlayers = computed(() => visiblePlayers.value.length < filteredPlayers.value.length);
   const sortedLeaders = computed(() => {
     const fields = [['points', '得分'], ['rebounds', '篮板'], ['assists', '助攻']];
     return fields.map(([field, label]) => ({
@@ -47,6 +51,26 @@ export const useNbaDataStore = defineStore('nba-data', () => {
       rows: [...players.value].sort((a, b) => (b.stats?.[field] || 0) - (a.stats?.[field] || 0)).slice(0, 5)
     }));
   });
+  const leaderCards = computed(() => {
+    const official = Object.entries(snapshot.value?.leaders || {})
+      .map(([label, rows]) => ({
+        field: label,
+        label,
+        rows: (rows || []).slice(0, 5).map((row) => ({
+          fullName: row.player,
+          teamId: row.team,
+          leaderValue: row.value
+        }))
+      }))
+      .filter((leader) => leader.rows.length);
+    return official.length ? official : sortedLeaders.value;
+  });
+  const overviewStats = computed(() => ({
+    games: currentGames.value.length,
+    teams: currentTeams.value.length,
+    players: currentPlayers.value.length,
+    seasons: seasons.value.length
+  }));
   const dataStatus = computed(() => {
     const status = snapshot.value?.manifest?.sourceStatus;
     if (status === 'official') return '官方快照';
@@ -63,6 +87,7 @@ export const useNbaDataStore = defineStore('nba-data', () => {
     try {
       snapshot.value = await loadNbaSnapshot();
       playerProfiles.value = {};
+      playerBases.value = {};
       featuredLoading.value = true;
       try {
         featuredPlayer.value = await fetchJson('players/2544.json');
@@ -105,14 +130,23 @@ export const useNbaDataStore = defineStore('nba-data', () => {
   function showView(nextView) {
     view.value = nextView;
     search.value = '';
+    playerListLimit.value = 80;
     if (nextView === 'history' && seasons.value.length) {
       if (!selectedSeason.value) selectedSeason.value = seasons.value.at(-1);
       loadHistorySeason(selectedSeason.value);
     }
   }
 
+  function showMorePlayers() {
+    playerListLimit.value += 80;
+  }
+
   function openPlayer(playerId) {
-    selectedPlayerId.value = String(playerId);
+    const id = String(playerId);
+    const base = currentPlayers.value.find((player) => String(player.id) === id)
+      || activeHistory.value?.players?.find((player) => String(player.id) === id);
+    if (base && id !== '2544') playerBases.value = { ...playerBases.value, [id]: base };
+    selectedPlayerId.value = id;
     view.value = 'player';
     search.value = '';
     playerError.value = '';
@@ -140,17 +174,9 @@ export const useNbaDataStore = defineStore('nba-data', () => {
           rows: playersForSeason.filter((player) => String(player.id) === id)
         };
       }));
-      const base = currentPlayers.value.find((player) => String(player.id) === id);
+      const base = currentPlayers.value.find((player) => String(player.id) === id) || playerBases.value[id];
       if (!base) throw new Error('未找到该球员的当前资料');
       const failedSeasons = results.filter((result) => result.status === 'rejected').length;
-      const loadedHistory = { ...history.value };
-      results.filter((result) => result.status === 'fulfilled').forEach((result) => {
-        loadedHistory[result.value.season] = {
-          ...(loadedHistory[result.value.season] || {}),
-          players: result.value.players
-        };
-      });
-      history.value = loadedHistory;
       const seasonRows = results
         .filter((result) => result.status === 'fulfilled')
         .flatMap((result) => result.value.rows.map((player) => ({ season: result.value.season, player })));
@@ -219,8 +245,8 @@ export const useNbaDataStore = defineStore('nba-data', () => {
   }
 
   return {
-    snapshot, loading, historyLoading, featuredPlayer, featuredLoading, featuredError, error, historyError, view, search, selectedSeason, selectedPlayerId,
-    playerLoading, playerError, selectedPlayer, seasons, players, teams, currentTeams, currentGames, filteredPlayers, sortedLeaders,
-    dataStatus, generatedAt, refresh, loadHistorySeason, selectSeason, showView, openPlayer, closePlayer, loadPlayerHistory
+    snapshot, loading, historyLoading, featuredPlayer, featuredLoading, featuredError, error, historyError, view, search, playerListLimit, selectedSeason, selectedPlayerId,
+    playerLoading, playerError, selectedPlayer, seasons, players, teams, currentTeams, currentGames, filteredPlayers, visiblePlayers, hasMorePlayers, sortedLeaders, leaderCards, overviewStats,
+    dataStatus, generatedAt, refresh, loadHistorySeason, selectSeason, showView, showMorePlayers, openPlayer, closePlayer, loadPlayerHistory
   };
 });
