@@ -52,7 +52,7 @@ uv run --with "nba_api>=1.11.4,<2" --with "pandas>=2.2" `
 
 ## 每日刷新
 
-`.github/workflows/data-refresh.yml` 每天 UTC `08:30` 运行，也支持手动触发。手动输入赛季时使用输入值；留空则由 `refresh_nba_data.py` 根据日期自动推导当前 NBA 赛季。它替换 `manifest.json`、`games/today.json`、当前球队、球员和排行榜文件，并用 `--merge-current` 将当天的当前赛季快照写回 `history/players/{season}.json` 与 `history/teams/{season}.json`，随后重建两个实体档案目录。
+`.github/workflows/data-refresh.yml` 每天北京时间 `00:00`（UTC `16:00`）运行，也支持手动触发。手动输入赛季时使用输入值；留空则由 `refresh_nba_data.py` 根据日期自动推导当前 NBA 赛季。统计抓取失败会在 Action 内做 3 轮延迟重试；三轮仍失败时保留上一份已发布快照、不执行部署，并自动创建或更新一个 GitHub Issue。它替换 `manifest.json`、`games/today.json`、当前球队、球员和排行榜文件，并用 `--merge-current` 将当天的当前赛季快照写回 `history/players/{season}.json` 与 `history/teams/{season}.json`，随后重建两个实体档案目录。
 
 `manifest.json` 的 `dataHealth` 记录每个数据模块的 `status`、更新时间和条目数。Action 会在部署前核对这些声明与实际 JSON 文件；比赛接口暂时不可用时状态为 `partial`，不会掩盖球队或球员统计是否正常。
 

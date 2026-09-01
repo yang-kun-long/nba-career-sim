@@ -103,7 +103,8 @@ wrangler.toml       Cloudflare Pages 配置
 
 - Pull Request：安装 Python 环境、重建并校验 NBA 历史档案索引、安装 Node 依赖和浏览器，运行单元测试、E2E 测试和生产构建
 - 推送到 `main`：先完成同样的校验，再部署到 Cloudflare Pages
-- 每日刷新：拉取当前赛季快照，将当前赛季合并到历史分片，重建球员/球队档案索引，校验后部署
+- 每日刷新：每天北京时间 00:00 拉取当前赛季快照；数据接口失败会做 3 轮延迟重试，将当前赛季合并到历史分片，重建球员/球队档案索引，校验后部署
+- 失败保护：统计接口三轮重试仍失败时保留上一份已发布快照、不执行部署，并自动创建或更新一个 GitHub Issue；仅实时比赛接口失败时仍可发布可用统计并标记 `partial`
 - `workflow_dispatch`：支持手动触发
 
 要启用主分支自动部署，需要在 GitHub 仓库的 Settings → Secrets and variables → Actions 中添加：

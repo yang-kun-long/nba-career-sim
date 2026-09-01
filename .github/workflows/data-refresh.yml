@@ -2,7 +2,8 @@ name: Refresh NBA Data
 
 on:
   schedule:
-    - cron: '30 8 * * *'
+    # GitHub cron uses UTC; 16:00 UTC is 00:00 the next day in Beijing.
+    - cron: '0 16 * * *'
   workflow_dispatch:
     inputs:
       season:
@@ -12,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: nba-data-refresh
@@ -21,7 +23,7 @@ jobs:
   refresh-and-deploy:
     name: Refresh and deploy static NBA snapshot
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     env:
       NBA_SEASON: ${{ github.event.inputs.season || vars.NBA_SEASON || '' }}
     steps:
@@ -39,7 +41,21 @@ jobs:
         run: python -m pip install -r scripts/requirements.txt
 
       - name: Fetch, normalize, and validate NBA data
-        run: python scripts/refresh_nba_data.py --output public/data --season "$NBA_SEASON"
+        run: |
+          set -o pipefail
+          for attempt in 1 2 3; do
+            echo "NBA data refresh attempt ${attempt}/3"
+            if python scripts/refresh_nba_data.py --output public/data --season "$NBA_SEASON"; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              delay=$((attempt * 120))
+              echo "Attempt ${attempt} failed; retrying in ${delay}s"
+              sleep "$delay"
+            fi
+          done
+          echo "NBA data refresh failed after 3 outer attempts" >&2
+          exit 1
 
       - name: Build and validate NBA career indexes
         run: |
@@ -63,3 +79,37 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx wrangler pages deploy dist --project-name nba-career-sim --branch main
+
+      - name: Notify refresh failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '[NBA data refresh] 自动刷新失败';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `自动刷新在北京时间 ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })} 失败。`,
+              '',
+              `本次运行：${runUrl}`,
+              '已保留上一份成功发布的静态快照，未执行 Cloudflare 部署。',
+              '',
+              '请查看失败步骤日志；NBA.com 接口可能需要稍后重试。'
+            ].join('\\n');
+            const search = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:issue is:open in:title "${title}"`
+            });
+            if (search.data.total_count > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: search.data.items[0].number,
+                body
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body
+              });
+            }
