@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted } from 'vue';
 import { useGameStore } from './stores/game.js';
 import TitleScreen from './components/TitleScreen.vue';
 import CreatePlayer from './components/CreatePlayer.vue';
@@ -12,6 +13,10 @@ import RetireConfirm from './components/RetireConfirm.vue';
 import HistoryScreen from './components/HistoryScreen.vue';
 import NbaDataCenter from './components/NbaDataCenter.vue';
 const game = useGameStore();
+
+onMounted(() => {
+  if (new URLSearchParams(window.location.search).get('nba') === '1') game.showNbaData();
+});
 </script>
 
 <template>

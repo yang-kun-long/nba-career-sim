@@ -48,6 +48,17 @@ test('loads a regular player career from one indexed archive file', async ({ pag
   expect(historyRequests.filter((path) => path.includes('/history/players/'))).toHaveLength(0);
 });
 
+test('restores a shared player dashboard from the URL', async ({ page }) => {
+  await page.goto('/?nba=1&player=1630639');
+  await expect(page.locator('.dashboard-identity h3')).toHaveText('A.J. Lawson');
+  const sharedUrl = new URL(page.url());
+  expect(sharedUrl.searchParams.get('nba')).toBe('1');
+  expect(sharedUrl.searchParams.get('player')).toBe('1630639');
+  await page.getByRole('button', { name: '返回球员列表' }).click();
+  expect(new URL(page.url()).searchParams.get('view')).toBe('players');
+  expect(new URL(page.url()).searchParams.get('player')).toBeNull();
+});
+
 test('provides a usable overview, official leaders, and season archive tables', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
@@ -84,6 +95,7 @@ test('opens a team dashboard with history and roster data', async ({ page }) => 
   await lakers.click();
   await expect(page.locator('.team-dashboard')).toBeVisible();
   await expect(page.locator('.team-dashboard h3')).toHaveText('Los Angeles Lakers');
+  await expect(page.locator('.team-line-chart')).toBeVisible();
   await expect(page.locator('.team-history-table tbody tr')).toHaveCount(16);
   await expect(page.locator('.team-roster-table tbody tr').first()).toBeVisible();
   expect(historyRequests.filter((path) => path.endsWith('/team-careers/lal.json'))).toHaveLength(1);

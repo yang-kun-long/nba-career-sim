@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useNbaDataStore } from '../stores/nba-data.js';
 import { useGameStore } from '../stores/game.js';
 import PlayerDashboard from './PlayerDashboard.vue';
@@ -25,7 +25,45 @@ const pct = (value) => {
 const number = (value) => value === null || value === undefined ? '-' : Number(value).toFixed(1);
 const dateLabel = (value) => value ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeZone: 'Asia/Shanghai' }).format(new Date(value)) : '-';
 
-onMounted(() => nba.refresh());
+const shareReady = ref(false);
+const validViews = new Set(tabs.map(([key]) => key));
+const updateShareUrl = () => {
+  if (!shareReady.value) return;
+  const params = new URLSearchParams(window.location.search);
+  params.set('nba', '1');
+  params.delete('player');
+  params.delete('team');
+  if (nba.view === 'player' && nba.selectedPlayerId) params.set('player', nba.selectedPlayerId);
+  else if (nba.view === 'team' && nba.selectedTeamId) params.set('team', nba.selectedTeamId);
+  else if (validViews.has(nba.view)) params.set('view', nba.view);
+  else params.delete('view');
+  window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}${window.location.hash}`);
+};
+const clearShareUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  params.delete('nba');
+  params.delete('view');
+  params.delete('player');
+  params.delete('team');
+  const query = params.toString();
+  window.history.replaceState({}, '', `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`);
+};
+
+onMounted(async () => {
+  await nba.refresh();
+  const params = new URLSearchParams(window.location.search);
+  const sharedPlayer = params.get('player');
+  const sharedTeam = params.get('team');
+  const sharedView = params.get('view');
+  if (sharedPlayer) nba.openPlayer(sharedPlayer);
+  else if (sharedTeam) nba.openTeam(sharedTeam);
+  else if (sharedView && validViews.has(sharedView)) nba.showView(sharedView);
+  shareReady.value = true;
+  updateShareUrl();
+});
+
+watch(() => [nba.view, nba.selectedPlayerId, nba.selectedTeamId], updateShareUrl);
+onBeforeUnmount(clearShareUrl);
 </script>
 
 <template>
