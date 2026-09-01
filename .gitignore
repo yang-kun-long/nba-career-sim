@@ -6,6 +6,8 @@ artifacts/
 playwright-report/
 test-results/
 .wrangler/
+public/data/history/player-careers/
+public/data/history/team-careers/
 .env
 .env.*
 !.env.example

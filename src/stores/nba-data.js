@@ -2,6 +2,15 @@ import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { fetchJson, formatSnapshotDate, loadNbaSnapshot } from '../data/nba-data.js';
 
+function resolveArchivePath(pattern, placeholder, id, fallback) {
+  const resolved = (pattern || fallback).replace(placeholder, encodeURIComponent(String(id)));
+  return resolved.replace(/^\/?data\//, '');
+}
+
+function isNotFound(error) {
+  return error instanceof Error && /: 404\b/.test(error.message);
+}
+
 export const useNbaDataStore = defineStore('nba-data', () => {
   const snapshot = ref(null);
   const history = ref({});
@@ -198,11 +207,34 @@ export const useNbaDataStore = defineStore('nba-data', () => {
 
   async function loadTeamHistory(teamId) {
     const id = String(teamId);
-    if (teamProfiles.value[id] || teamLoadingIds.has(id) || !seasons.value.length) return;
+    if (teamProfiles.value[id] || teamLoadingIds.has(id)) return;
     teamLoadingIds.add(id);
     teamLoading.value = true;
     teamError.value = '';
     try {
+      const pattern = snapshot.value?.manifest?.history?.teamCareersPattern;
+      const archivePath = resolveArchivePath(pattern, '{teamId}', id, '/data/history/team-careers/{teamId}.json');
+      let archive = null;
+      try {
+        archive = await fetchJson(archivePath);
+      } catch (cause) {
+        if (!isNotFound(cause)) throw cause;
+      }
+      if (archive?.history?.length) {
+        const base = {
+          ...(archive.team || {}),
+          ...(currentTeams.value.find((team) => String(team.id) === id) || teamBases.value[id] || {})
+        };
+        if (!base.id) throw new Error('未找到该球队的当前资料');
+        teamProfiles.value = {
+          ...teamProfiles.value,
+          [id]: { ...base, history: archive.history, schemaVersion: archive.schemaVersion, dataVersion: archive.dataVersion }
+        };
+        return;
+      }
+      if (!seasons.value.length) throw new Error('历史数据暂时不可用');
+
+      // Legacy deployments may not have per-team career files yet.
       const results = await Promise.allSettled(seasons.value.map(async (season) => {
         const cached = history.value[season]?.teams;
         const teamsForSeason = cached || (await fetchJson(`history/teams/${season}.json`)).teams || [];
@@ -253,11 +285,29 @@ export const useNbaDataStore = defineStore('nba-data', () => {
 
   async function loadPlayerHistory(playerId) {
     const id = String(playerId);
-    if (id === '2544' || playerProfiles.value[id] || playerLoadingIds.has(id) || !seasons.value.length) return;
+    if (id === '2544' || playerProfiles.value[id] || playerLoadingIds.has(id)) return;
     playerLoadingIds.add(id);
     playerLoading.value = true;
     playerError.value = '';
     try {
+      const pattern = snapshot.value?.manifest?.history?.playerCareersPattern;
+      const archivePath = resolveArchivePath(pattern, '{playerId}', id, '/data/history/player-careers/{playerId}.json');
+      let archive = null;
+      try {
+        archive = await fetchJson(archivePath);
+      } catch (cause) {
+        if (!isNotFound(cause)) throw cause;
+      }
+      if (archive?.career?.regularSeason?.length) {
+        const base = currentPlayers.value.find((player) => String(player.id) === id) || playerBases.value[id] || {};
+        const profile = { ...(archive.profile || {}), ...base };
+        if (!profile.id) profile.id = id;
+        playerProfiles.value = { ...playerProfiles.value, [id]: { ...archive, profile } };
+        return;
+      }
+      if (!seasons.value.length) throw new Error('历史数据暂时不可用');
+
+      // Legacy deployments may not have per-player career files yet.
       const results = await Promise.allSettled(seasons.value.map(async (season) => {
         const cached = history.value[season]?.players;
         const playersForSeason = cached || (await fetchJson(`history/players/${season}.json`)).players || [];

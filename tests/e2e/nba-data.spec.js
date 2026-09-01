@@ -29,6 +29,22 @@ test('keeps the featured LeBron archive separate from season snapshots', async (
   await expect(page.locator('.dashboard-identity h3')).toHaveText('LeBron James');
   await expect(page.locator('.dashboard-source')).toContainText('生涯档案');
   await expect(page.locator('.dashboard-table tbody tr')).toHaveCount(23);
+  await expect(page.locator('.dashboard-metrics strong').first()).toHaveText('20.9');
+});
+
+test('loads a regular player career from one indexed archive file', async ({ page }) => {
+  const historyRequests = [];
+  page.on('request', (request) => {
+    const pathname = new URL(request.url()).pathname;
+    if (pathname.includes('/data/history/')) historyRequests.push(pathname);
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'NBA 数据中心' }).click();
+  await page.getByRole('button', { name: '球员', exact: true }).click();
+  await page.locator('.player-row-clickable').filter({ hasText: 'A.J. Lawson' }).first().click();
+  await expect(page.locator('.dashboard-identity h3')).toHaveText('A.J. Lawson');
+  expect(historyRequests.filter((path) => path.endsWith('/player-careers/1630639.json'))).toHaveLength(1);
+  expect(historyRequests.filter((path) => path.includes('/history/players/'))).toHaveLength(0);
 });
 
 test('provides a usable overview, official leaders, and season archive tables', async ({ page }) => {
@@ -51,6 +67,11 @@ test('provides a usable overview, official leaders, and season archive tables', 
 
 test('opens a team dashboard with history and roster data', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  const historyRequests = [];
+  page.on('request', (request) => {
+    const pathname = new URL(request.url()).pathname;
+    if (pathname.includes('/data/history/')) historyRequests.push(pathname);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: 'NBA 数据中心' }).click();
   await page.getByRole('button', { name: '球队', exact: true }).click();
@@ -61,6 +82,8 @@ test('opens a team dashboard with history and roster data', async ({ page }) => 
   await expect(page.locator('.team-dashboard h3')).toHaveText('Los Angeles Lakers');
   await expect(page.locator('.team-history-table tbody tr')).toHaveCount(16);
   await expect(page.locator('.team-roster-table tbody tr').first()).toBeVisible();
+  expect(historyRequests.filter((path) => path.endsWith('/team-careers/lal.json'))).toHaveLength(1);
+  expect(historyRequests.filter((path) => path.includes('/history/teams/'))).toHaveLength(0);
   const widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: window.innerWidth }));
   expect(widths.body).toBe(widths.viewport);
 });

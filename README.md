@@ -36,10 +36,14 @@
 项目通过 GitHub Actions 定时任务使用 `nba_api` 读取 NBA.com 数据，并生成前端可直接消费的版本化静态 JSON。浏览器不会直接请求 NBA.com，游戏引擎也不依赖第三方接口的原始字段。
 
 - 历史基线：`2010-11` 至 `2025-26` 的赛季级球员、球队聚合数据
+- 历史档案：普通球员按 ID 生成 `history/player-careers/{playerId}.json`，球队按 ID 生成 `history/team-careers/{teamId}.json`；看板打开时只请求对应的单个档案
 - 每日快照：当天比赛、当前球队、当前球员统计和排行榜
-- 精选档案：詹姆斯（球员 ID `2544`）独立保存完整生涯资料，包含逐赛季常规赛、季后赛、全明星与生涯总计
+- 统计口径：普通球员历史和詹姆斯赛季记录统一使用场均值；詹姆斯档案的每行同时保留原始总量
+- 精选档案：詹姆斯（球员 ID `2544`）独立保存 `2003-04` 至今的完整生涯资料，包含逐赛季常规赛、季后赛、全明星与生涯总计
 - 失败策略：统计数据校验失败时不部署；实时比分失败时保留可用统计并标记 `partial`
 - 数据中心：首页进入“NBA 数据中心”可查看当前和历史赛季数据
+
+历史档案索引由 `npm run data:index` 生成，`npm run dev` 和 `npm run build` 会自动执行；生成目录被 `.gitignore` 忽略，CI/CD 和每日刷新 Action 会在构建前重建并运行 `--check` 校验。
 
 历史初始化和日常刷新命令见 [NBA 数据初始化与日常刷新](docs/nba-data-bootstrap.md)。
 
@@ -96,8 +100,9 @@ wrangler.toml       Cloudflare Pages 配置
 
 工作流位于 `.github/workflows/ci-cd.yml`：
 
-- Pull Request：安装依赖、安装浏览器、运行单元测试、E2E 测试和生产构建
+- Pull Request：安装 Python 环境、重建并校验 NBA 历史档案索引、安装 Node 依赖和浏览器，运行单元测试、E2E 测试和生产构建
 - 推送到 `main`：先完成同样的校验，再部署到 Cloudflare Pages
+- 每日刷新：拉取当前赛季快照，将当前赛季合并到历史分片，重建球员/球队档案索引，校验后部署
 - `workflow_dispatch`：支持手动触发
 
 要启用主分支自动部署，需要在 GitHub 仓库的 Settings → Secrets and variables → Actions 中添加：

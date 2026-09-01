@@ -40,7 +40,11 @@
       "2025-26"
     ],
     "playersPattern": "/data/history/players/{season}.json",
-    "teamsPattern": "/data/history/teams/{season}.json"
+    "teamsPattern": "/data/history/teams/{season}.json",
+    "playerCareersPattern": "/data/history/player-careers/{playerId}.json",
+    "teamCareersPattern": "/data/history/team-careers/{teamId}.json",
+    "careerSchemaVersion": 2,
+    "playerStatsMode": "perGame"
   },
   "historyUpdatedAt": "2026-09-01T04:07:54Z"
 }

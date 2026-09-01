@@ -17,41 +17,15 @@ const currentStats = computed(() => {
   const current = rows.at(-1);
   return current || props.player.stats || {};
 });
-const metricStats = computed(() => {
-  const stats = currentStats.value || {};
-  if (!isFeatured.value || !stats.gp) return stats;
-  const games = Number(stats.gp) || 1;
-  return {
-    ...stats,
-    minutes: Number(stats.minutes) / games,
-    points: Number(stats.points) / games,
-    rebounds: Number(stats.rebounds) / games,
-    assists: Number(stats.assists) / games,
-    steals: Number(stats.steals) / games,
-    blocks: Number(stats.blocks) / games
-  };
-});
+// Career archives expose per-game values for every player, including the featured archive.
+const metricStats = computed(() => currentStats.value || {});
 const regularRows = computed(() => props.player.career?.regularSeason || (props.player.stats ? [{ season: props.player.season || '当前赛季', team: props.player.teamId?.toUpperCase(), ...props.player.stats }] : []));
 const activeRows = computed(() => props.player.career?.[activeTable.value] || regularRows.value);
-const chartRows = computed(() => regularRows.value.map((row) => {
-  if (!isFeatured.value || !row.gp) return row;
-  const games = Number(row.gp) || 1;
-  return {
-    ...row,
-    minutes: Number(row.minutes) / games,
-    points: Number(row.points) / games,
-    rebounds: Number(row.rebounds) / games,
-    assists: Number(row.assists) / games,
-    steals: Number(row.steals) / games,
-    blocks: Number(row.blocks) / games
-  };
-}));
-const totalRow = computed(() => props.player.career?.regularSeasonTotals?.[0] || {});
+const chartRows = computed(() => regularRows.value);
 const tabCount = (key) => props.player.career?.[key]?.length || (key === 'regularSeason' ? regularRows.value.length : 0);
 const tabAvailable = (key) => tabCount(key) > 0;
 const sourceLabel = computed(() => isFeatured.value ? 'NBA.com 生涯档案' : 'NBA.com 2010-11 至今历史快照');
 const metric = (key) => currentStats.value?.[key] === null || currentStats.value?.[key] === undefined ? '-' : Number(currentStats.value[key]).toFixed(1);
-const total = (key) => totalRow.value?.[key] === null || totalRow.value?.[key] === undefined ? metric(key) : Math.round(Number(totalRow.value[key])).toLocaleString('zh-CN');
 const pct = (value) => {
   if (value === null || value === undefined) return '-';
   const numeric = Number(value);
@@ -112,6 +86,6 @@ const chartTicks = computed(() => [0, 0.25, 0.5, 0.75, 1].map((step) => ({ y: 22
       <article class="dashboard-card trend-card"><div class="dashboard-card-heading"><div><span class="view-kicker">CAREER TREND</span><h4>生涯走势</h4></div><div class="chart-legend"><span class="legend-points">得分</span><span class="legend-rebounds">篮板</span><span class="legend-assists">助攻</span></div></div><div v-if="lineRows.length" class="line-chart-wrap"><svg class="line-chart" viewBox="0 0 760 260" preserveAspectRatio="none" role="img" aria-label="得分篮板助攻生涯折线图"><line v-for="tick in chartTicks" :key="tick.y" x1="45" :y1="tick.y" x2="710" :y2="tick.y" class="chart-grid-line" /><text v-for="tick in chartTicks" :key="`label-${tick.y}`" x="38" :y="tick.y + 4" class="chart-y-label">{{ tick.label }}</text><polyline :points="linePoints('points')" class="chart-line points-line" /><polyline :points="linePoints('rebounds')" class="chart-line rebounds-line" /><polyline :points="linePoints('assists')" class="chart-line assists-line" /><circle v-for="(row, index) in lineRows" :key="`point-${index}`" :cx="lineX(index)" :cy="lineY(row.points)" r="2.8" class="chart-dot points-dot" /><text v-for="label in chartLabels" :key="label.label" :x="lineX(label.index)" y="246" class="chart-x-label">{{ label.label }}</text></svg></div><div v-else class="dashboard-empty">暂无跨赛季数据</div></article>
     </section>
 
-    <section class="dashboard-card history-card"><div class="dashboard-card-heading"><div><span class="view-kicker">SEASON LOG</span><h4>历史数据</h4></div><span class="dashboard-caption">{{ activeRows.length }} 个赛季</span></div><div class="dashboard-tabs"><button v-for="tab in tableTabs" :key="tab[0]" class="data-tab" :class="{ active: activeTable === tab[0] }" :disabled="!tabAvailable(tab[0])" @click="activeTable = tab[0]">{{ tab[1] }} <span>{{ tabCount(tab[0]) || '暂无' }}</span></button></div><div v-if="activeRows.length" class="dashboard-table-wrap"><table class="dashboard-table"><thead><tr><th>赛季</th><th>球队</th><th>场次</th><th>首发</th><th>时间</th><th>得分</th><th>篮板</th><th>助攻</th><th>抢断</th><th>盖帽</th><th>命中率</th><th>三分</th></tr></thead><tbody><tr v-for="row in activeRows" :key="`${activeTable}-${row.season || 'total'}`"><td><strong>{{ row.season || '生涯总计' }}</strong><small v-if="row.age">{{ Math.round(row.age) }} 岁</small></td><td>{{ row.team || '-' }}</td><td>{{ row.gp ?? '-' }}</td><td>{{ row.gs ?? '-' }}</td><td>{{ row.minutes ?? '-' }}</td><td>{{ row.points ?? '-' }}</td><td>{{ row.rebounds ?? '-' }}</td><td>{{ row.assists ?? '-' }}</td><td>{{ row.steals ?? '-' }}</td><td>{{ row.blocks ?? '-' }}</td><td>{{ pct(row.fgPct) }}</td><td>{{ pct(row.threePct) }}</td></tr></tbody></table></div><div v-else class="dashboard-empty">暂无{{ tableTabs.find(([key]) => key === activeTable)?.[1] || '该类型' }}数据</div></section>
+    <section class="dashboard-card history-card"><div class="dashboard-card-heading"><div><span class="view-kicker">SEASON LOG</span><h4>历史数据</h4></div><span class="dashboard-caption">{{ activeRows.length }} 个赛季</span></div><div class="dashboard-tabs"><button v-for="tab in tableTabs" :key="tab[0]" class="data-tab" :class="{ active: activeTable === tab[0] }" :disabled="!tabAvailable(tab[0])" @click="activeTable = tab[0]">{{ tab[1] }} <span>{{ tabCount(tab[0]) || '暂无' }}</span></button></div><div v-if="activeRows.length" class="dashboard-table-wrap"><table class="dashboard-table"><thead><tr><th>赛季</th><th>球队</th><th>场次</th><th>首发</th><th>场均时间</th><th>场均得分</th><th>场均篮板</th><th>场均助攻</th><th>场均抢断</th><th>场均盖帽</th><th>命中率</th><th>三分</th></tr></thead><tbody><tr v-for="row in activeRows" :key="`${activeTable}-${row.season || 'total'}`"><td><strong>{{ row.season || '生涯总计' }}</strong><small v-if="row.age">{{ Math.round(row.age) }} 岁</small></td><td>{{ row.team || '-' }}</td><td>{{ row.gp ?? '-' }}</td><td>{{ row.gs ?? '-' }}</td><td>{{ row.minutes ?? '-' }}</td><td>{{ row.points ?? '-' }}</td><td>{{ row.rebounds ?? '-' }}</td><td>{{ row.assists ?? '-' }}</td><td>{{ row.steals ?? '-' }}</td><td>{{ row.blocks ?? '-' }}</td><td>{{ pct(row.fgPct) }}</td><td>{{ pct(row.threePct) }}</td></tr></tbody></table></div><div v-else class="dashboard-empty">暂无{{ tableTabs.find(([key]) => key === activeTable)?.[1] || '该类型' }}数据</div></section>
   </div>
 </template>

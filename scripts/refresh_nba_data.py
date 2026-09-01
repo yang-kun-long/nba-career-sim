@@ -263,6 +263,8 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
                 "points": value(row, "PTS"),
                 "rebounds": value(row, "REB"),
                 "assists": value(row, "AST"),
+                "steals": value(row, "STL"),
+                "blocks": value(row, "BLK"),
                 "fgPct": value(row, "FG_PCT"),
                 "threePct": value(row, "FG3_PCT"),
                 "ftPct": value(row, "FT_PCT"),

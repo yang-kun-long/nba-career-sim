@@ -5,7 +5,10 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
+    "data:index": "python scripts/build_nba_history_indexes.py --data-root public/data",
+    "predev": "npm run data:index",
     "dev": "vite",
+    "prebuild": "npm run data:index",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
@@ -19,6 +22,7 @@
     "@playwright/test": "^1.62.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "vite": "^7.1.3",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "wrangler": "^4.127.1"
   }
 }
