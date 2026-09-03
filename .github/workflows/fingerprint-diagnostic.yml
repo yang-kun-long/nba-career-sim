@@ -61,12 +61,19 @@ jobs:
                           result['ip']='OK' if 'ip=' in ip else 'NO'
                       except Exception: pass
                       try:
-                          r=subprocess.run(['curl','sS','-o','/dev/null','-w','%{http_code}|%{content_type}|%{size_download}','--max-time','15','--proxy',f'http://127.0.0.1:{port}','-H','User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36','-H','Referer: https://www.nba.com/','-H','Accept: application/json, text/plain, */*',NBA],capture_output=True,text=True)
-                          result['curl']=r.stdout.strip() or 'ERR'
+                          curl_body = pathlib.Path(td) / f'curl-{i}.json'
+                          r=subprocess.run(['curl','-sS','-o',str(curl_body),'-w','%{http_code}|%{content_type}|%{size_download}','--max-time','15','--proxy',f'http://127.0.0.1:{port}','-H','User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36','-H','Referer: https://www.nba.com/','-H','Accept: application/json, text/plain, */*',NBA],capture_output=True,text=True)
+                          valid = False
+                          if curl_body.exists():
+                              document = json.loads(curl_body.read_text(encoding='utf-8'))
+                              valid = any(result_set.get('rowSet') for result_set in document.get('resultSets', []) if isinstance(result_set, dict))
+                          result['curl']=f'{r.stdout.strip() or "ERR"}|json={int(valid)}'
                       except Exception: pass
                       try:
                           r=cffi.get(NBA,proxies={'https':f'http://127.0.0.1:{port}','http':f'http://127.0.0.1:{port}'},impersonate='chrome131',headers={'Referer':'https://www.nba.com/','Accept':'application/json, text/plain, */*'},timeout=15)
-                          result['cffi']=f'{r.status_code}|{r.headers.get("content-type","")}|{len(r.content)}'
+                          document = r.json()
+                          valid = any(result_set.get('rowSet') for result_set in document.get('resultSets', []) if isinstance(result_set, dict))
+                          result['cffi']=f'{r.status_code}|{r.headers.get("content-type","")}|{len(r.content)}|json={int(valid)}'
                       except Exception: pass
                       return i, result
                   with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
