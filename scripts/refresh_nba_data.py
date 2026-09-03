@@ -26,6 +26,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout", type=int, default=30)
     parser.add_argument("--retries", type=int, default=3)
     parser.add_argument("--sleep", type=float, default=1.5)
+    parser.add_argument("--proxy", default="", help="HTTP/SOCKS proxy used only for NBA API requests")
     return parser.parse_args()
 
 
@@ -191,6 +192,7 @@ def fetch_featured_player(args: argparse.Namespace, generated_at: str) -> dict[s
     career = endpoint_with_retry(
         playercareerstats.PlayerCareerStats,
         player_id=player_id,
+        proxy=args.proxy or None,
         timeout=args.timeout,
         retries=args.retries,
         pause=args.sleep,
@@ -207,6 +209,7 @@ def fetch_featured_player(args: argparse.Namespace, generated_at: str) -> dict[s
         info = endpoint_with_retry(
             commonplayerinfo.CommonPlayerInfo,
             player_id=player_id,
+            proxy=args.proxy or None,
             timeout=args.timeout,
             retries=args.retries,
             pause=args.sleep,
@@ -271,6 +274,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
             leaguestandings.LeagueStandings,
             season=args.season,
             season_type="Regular Season",
+            proxy=args.proxy or None,
             timeout=args.timeout,
             retries=args.retries,
             pause=args.sleep,
@@ -295,6 +299,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
             season=args.season,
             per_mode_detailed="PerGame",
             season_type_all_star="Regular Season",
+            proxy=args.proxy or None,
             timeout=args.timeout,
             retries=args.retries,
             pause=args.sleep,
@@ -343,6 +348,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
     try:
         live_endpoint = endpoint_with_retry(
             scoreboard.ScoreBoard,
+            proxy=args.proxy or None,
             timeout=args.timeout,
             retries=args.retries,
             pause=args.sleep,

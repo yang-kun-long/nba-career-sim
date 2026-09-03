@@ -40,12 +40,54 @@ jobs:
       - name: Install NBA data dependencies
         run: python -m pip install -r scripts/requirements.txt
 
+      - name: Start private NBA proxy
+        env:
+          CLASH_SUBSCRIPTION_URL: ${{ secrets.CLASH_SUBSCRIPTION_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CLASH_SUBSCRIPTION_URL" ]; then
+            echo "::error::CLASH_SUBSCRIPTION_URL is not configured"
+            exit 1
+          fi
+
+          proxy_dir="$RUNNER_TEMP/nba-proxy"
+          mkdir -p "$proxy_dir"
+          curl --fail --silent --show-error --location \
+            "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.30/mihomo-linux-amd64-v1.19.30.gz" \
+            --output "$proxy_dir/mihomo.gz"
+          echo "cf06ce2c7d1421bdbda14ee4a5b6046672dc35ebf8eecd8e77504ec3c0ed9a84  $proxy_dir/mihomo.gz" | sha256sum --check
+          gzip --decompress "$proxy_dir/mihomo.gz"
+          chmod 700 "$proxy_dir/mihomo"
+
+          curl --fail --silent --show-error --location \
+            --user-agent "clash.meta" \
+            "$CLASH_SUBSCRIPTION_URL" \
+            --output "$proxy_dir/config.yaml"
+          test -s "$proxy_dir/config.yaml"
+          "$proxy_dir/mihomo" -t -d "$proxy_dir" -f "$proxy_dir/config.yaml"
+          "$proxy_dir/mihomo" -d "$proxy_dir" -f "$proxy_dir/config.yaml" >"$proxy_dir/mihomo.log" 2>&1 &
+
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error \
+              --proxy http://127.0.0.1:7890 \
+              --connect-timeout 5 --max-time 15 \
+              https://api.ipify.org >/dev/null; then
+              echo "NBA proxy is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "::error::NBA proxy did not become ready"
+          tail -n 40 "$proxy_dir/mihomo.log" || true
+          exit 1
+
       - name: Fetch, normalize, and validate NBA data
         run: |
           set -o pipefail
           for attempt in 1 2 3; do
             echo "NBA data refresh attempt ${attempt}/3"
-            if python scripts/refresh_nba_data.py --output public/data --season "$NBA_SEASON"; then
+            if python scripts/refresh_nba_data.py --output public/data --season "$NBA_SEASON" --proxy http://127.0.0.1:7890; then
               exit 0
             fi
             if [ "$attempt" -lt 3 ]; then
