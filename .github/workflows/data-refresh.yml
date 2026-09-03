@@ -26,6 +26,7 @@ jobs:
     timeout-minutes: 35
     env:
       NBA_SEASON: ${{ github.event.inputs.season || vars.NBA_SEASON || '' }}
+      NBA_PROXY_URL: http://127.0.0.1:7890
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -40,12 +41,26 @@ jobs:
       - name: Install NBA data dependencies
         run: python -m pip install -r scripts/requirements.txt
 
+      - name: Download Mihomo
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 -o /tmp/mihomo.gz \
+            https://github.com/MetaCubeX/mihomo/releases/download/v1.19.30/mihomo-linux-amd64-v1.19.30.gz
+          echo 'cf06ce2c7d1421bdbda14ee4a5b6046672dc35ebf8eecd8e77504ec3c0ed9a84  /tmp/mihomo.gz' | sha256sum -c -
+          gzip -dc /tmp/mihomo.gz > /tmp/mihomo
+          chmod +x /tmp/mihomo
+
+      - name: Start NBA proxy and select a compatible node
+        env:
+          CLASH_SUBSCRIPTION_URL: ${{ secrets.CLASH_SUBSCRIPTION_URL }}
+        run: python scripts/start_nba_proxy.py --mihomo /tmp/mihomo --workdir /tmp/nba-mihomo
+
       - name: Fetch, normalize, and validate NBA data
         run: |
           set -o pipefail
           for attempt in 1 2 3; do
             echo "NBA data refresh attempt ${attempt}/3"
-            if python scripts/refresh_nba_data.py --output public/data --season "$NBA_SEASON"; then
+            if python scripts/refresh_nba_data.py --output public/data --season "$NBA_SEASON" --proxy "$NBA_PROXY_URL"; then
               exit 0
             fi
             if [ "$attempt" -lt 3 ]; then
@@ -56,6 +71,13 @@ jobs:
           done
           echo "NBA data refresh failed after 3 outer attempts" >&2
           exit 1
+
+      - name: Stop NBA proxy
+        if: always()
+        run: |
+          if [ -f /tmp/nba-mihomo/mihomo.pid ]; then
+            kill "$(cat /tmp/nba-mihomo/mihomo.pid)" || true
+          fi
 
       - name: Build and validate NBA career indexes
         run: |

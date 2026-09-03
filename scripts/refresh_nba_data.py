@@ -41,6 +41,17 @@ def now_iso() -> str:
     return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def configure_nba_http() -> None:
+    """Use a browser TLS fingerprint for NBA endpoints that reject generic clients."""
+    from curl_cffi import requests as curl_requests
+    from nba_api.live.nba.library.http import NBALiveHTTP
+    from nba_api.stats.library.http import NBAStatsHTTP
+
+    session = curl_requests.Session(impersonate="chrome131")
+    NBAStatsHTTP.set_session(session)
+    NBALiveHTTP.set_session(session)
+
+
 def serializable(value: Any) -> Any:
     if value is None:
         return None
@@ -487,6 +498,7 @@ def main() -> int:
     args = parse_args()
     args.season = args.season or current_nba_season()
     try:
+        configure_nba_http()
         snapshot = build_snapshot(args)
     except Exception as error:
         print(f"::error::{error}", file=sys.stderr)

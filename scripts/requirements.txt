@@ -1,2 +1,4 @@
 nba_api>=1.11.4,<2
 pandas>=2.2.0
+curl_cffi>=0.13.0,<1
+PyYAML>=6.0,<7
