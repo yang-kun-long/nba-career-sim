@@ -26,7 +26,7 @@ jobs:
           set -euo pipefail
           python -m pip install --quiet pyyaml curl_cffi
           python - <<'PY'
-          import base64, json, os, pathlib, subprocess, tempfile, time, urllib.request, yaml
+          import base64, concurrent.futures, json, os, pathlib, subprocess, tempfile, time, urllib.request, yaml
           from curl_cffi import requests as cffi
 
           NBA = 'https://stats.nba.com/stats/commonteamyears?LeagueID=00'
@@ -52,7 +52,8 @@ jobs:
                           urllib.request.urlopen('http://127.0.0.1:9090/version',timeout=1); ready=True; break
                       except Exception: time.sleep(1)
                   print(f'CANDIDATES {len(proxies)} READY {int(ready)}')
-                  for i,p in enumerate(proxies):
+                  def test_node(item):
+                      i, p = item
                       port=10000+i
                       result={'curl':'ERR','cffi':'ERR','ip':'ERR'}
                       try:
@@ -60,13 +61,17 @@ jobs:
                           result['ip']='OK' if 'ip=' in ip else 'NO'
                       except Exception: pass
                       try:
-                          r=subprocess.run(['curl','sS','-o','/tmp/fp-curl.json','-w','%{http_code}|%{content_type}|%{size_download}','--max-time','15','--proxy',f'http://127.0.0.1:{port}','-H','User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36','-H','Referer: https://www.nba.com/','-H','Accept: application/json, text/plain, */*',NBA],capture_output=True,text=True)
+                          r=subprocess.run(['curl','sS','-o','/dev/null','-w','%{http_code}|%{content_type}|%{size_download}','--max-time','15','--proxy',f'http://127.0.0.1:{port}','-H','User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36','-H','Referer: https://www.nba.com/','-H','Accept: application/json, text/plain, */*',NBA],capture_output=True,text=True)
                           result['curl']=r.stdout.strip() or 'ERR'
                       except Exception: pass
                       try:
                           r=cffi.get(NBA,proxies={'https':f'http://127.0.0.1:{port}','http':f'http://127.0.0.1:{port}'},impersonate='chrome131',headers={'Referer':'https://www.nba.com/','Accept':'application/json, text/plain, */*'},timeout=15)
                           result['cffi']=f'{r.status_code}|{r.headers.get("content-type","")}|{len(r.content)}'
                       except Exception: pass
+                      return i, result
+                  with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+                      results = sorted(pool.map(test_node, enumerate(proxies)))
+                  for i, result in results:
                       print(f'NODE {i+1}: ip={result["ip"]} curl={result["curl"]} cffi={result["cffi"]}')
               finally:
                   proc.terminate(); proc.wait(timeout=8); log.close()
