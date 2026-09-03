@@ -68,6 +68,20 @@ jobs:
           "$proxy_dir/mihomo" -d "$proxy_dir" -f "$proxy_dir/config.yaml" >"$proxy_dir/mihomo.log" 2>&1 &
 
           for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:9090/version >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+
+          candidates=$(curl --fail --silent --show-error http://127.0.0.1:9090/proxies/uuone | jq -r '.all[]')
+          while IFS= read -r candidate; do
+            [ -n "$candidate" ] || continue
+            payload=$(jq -nc --arg name "$candidate" '{name: $name}')
+            curl --fail --silent --show-error -X PUT \
+              -H 'Content-Type: application/json' \
+              --data "$payload" \
+              http://127.0.0.1:9090/proxies/uuone || continue
             if curl --fail --silent --show-error \
               --proxy http://127.0.0.1:7890 \
               --connect-timeout 5 --max-time 15 \
@@ -75,11 +89,10 @@ jobs:
               echo "NBA proxy is ready"
               exit 0
             fi
-            sleep 2
-          done
+          done <<< "$candidates"
 
-          echo "::error::NBA proxy did not become ready"
-          tail -n 40 "$proxy_dir/mihomo.log" || true
+          echo "::error::No subscription proxy candidate could reach the internet"
+          tail -n 60 "$proxy_dir/mihomo.log" || true
           exit 1
 
       - name: Fetch, normalize, and validate NBA data
