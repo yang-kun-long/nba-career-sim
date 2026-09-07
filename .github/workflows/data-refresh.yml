@@ -79,6 +79,11 @@ jobs:
             kill "$(cat /tmp/nba-mihomo/mihomo.pid)" || true
           fi
 
+      - name: Build and validate NBA career indexes
+        run: |
+          python scripts/build_nba_history_indexes.py --data-root public/data --merge-current --season "$NBA_SEASON"
+          python scripts/build_nba_history_indexes.py --data-root public/data --check
+
       - name: Check for NBA data changes
         id: data_changes
         run: |
@@ -86,12 +91,6 @@ jobs:
             --local public/data \
             --remote-base https://nba-career-sim.pages.dev \
             --github-output "$GITHUB_OUTPUT"
-
-      - name: Build and validate NBA career indexes
-        if: steps.data_changes.outputs.changed == 'true'
-        run: |
-          python scripts/build_nba_history_indexes.py --data-root public/data --merge-current --season "$NBA_SEASON"
-          python scripts/build_nba_history_indexes.py --data-root public/data --check
 
       - name: Setup Node.js
         if: steps.data_changes.outputs.changed == 'true'
