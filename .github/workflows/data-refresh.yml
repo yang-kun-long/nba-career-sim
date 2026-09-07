@@ -79,24 +79,37 @@ jobs:
             kill "$(cat /tmp/nba-mihomo/mihomo.pid)" || true
           fi
 
+      - name: Check for NBA data changes
+        id: data_changes
+        run: |
+          python scripts/check_nba_data_changed.py \
+            --local public/data \
+            --remote-base https://nba-career-sim.pages.dev \
+            --github-output "$GITHUB_OUTPUT"
+
       - name: Build and validate NBA career indexes
+        if: steps.data_changes.outputs.changed == 'true'
         run: |
           python scripts/build_nba_history_indexes.py --data-root public/data --merge-current --season "$NBA_SEASON"
           python scripts/build_nba_history_indexes.py --data-root public/data --check
 
       - name: Setup Node.js
+        if: steps.data_changes.outputs.changed == 'true'
         uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
 
       - name: Install frontend dependencies
+        if: steps.data_changes.outputs.changed == 'true'
         run: npm ci
 
       - name: Build production bundle
+        if: steps.data_changes.outputs.changed == 'true'
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
+        if: steps.data_changes.outputs.changed == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
