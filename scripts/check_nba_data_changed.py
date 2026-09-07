@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -65,7 +66,15 @@ def read_local(path: Path) -> Any:
 
 def read_remote(base_url: str, relative_path: str, timeout: int) -> Any:
     url = urllib.parse.urljoin(base_url.rstrip("/") + "/", f"data/{relative_path}")
-    request = urllib.request.Request(url, headers={"User-Agent": "nba-career-sim-refresh/1.0"})
+    url = f"{url}?refresh={time.time_ns()}"
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "nba-career-sim-refresh/1.0",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+        },
+    )
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.load(response)
 
