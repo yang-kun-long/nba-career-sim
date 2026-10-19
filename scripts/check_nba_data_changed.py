@@ -48,6 +48,7 @@ def manifest_projection(document: dict[str, Any]) -> dict[str, Any]:
     return {
         "schemaVersion": document.get("schemaVersion"),
         "season": document.get("season"),
+        "seasonState": document.get("seasonState"),
         "sourceStatus": document.get("sourceStatus"),
         "health": {
             key: {

@@ -41,6 +41,62 @@ def now_iso() -> str:
     return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def schedule_season_state(payload: dict[str, Any], season: str, checked_at: str) -> dict[str, Any]:
+    schedule = payload.get("leagueSchedule") or {}
+    if schedule.get("seasonYear") != season:
+        raise RuntimeError(f"official schedule does not match requested season {season}")
+    game_prefix = f"002{season[2:4]}"
+    games = [
+        game
+        for day in schedule.get("gameDates", [])
+        for game in day.get("games", [])
+        if str(game.get("gameId", "")).startswith(game_prefix)
+    ]
+    if not games:
+        raise RuntimeError("official schedule contains no regular-season games")
+    starts = [datetime.fromisoformat(game["gameDateTimeUTC"].replace("Z", "+00:00")) for game in games]
+    opening = min(starts)
+    checked = datetime.fromisoformat(checked_at.replace("Z", "+00:00"))
+    if opening.tzinfo is None or checked.tzinfo is None:
+        raise RuntimeError("official schedule timestamps must include a timezone")
+    started = any(game.get("gameStatus") in (2, 3) for game in games)
+    return {
+        "season": season,
+        "phase": "regularSeason" if started or checked >= opening else "preseason",
+        "regularSeasonStartsAt": opening.isoformat().replace("+00:00", "Z"),
+        "regularSeasonGames": len(games),
+    }
+
+
+def fetch_season_state(args: argparse.Namespace, checked_at: str) -> dict[str, Any]:
+    from curl_cffi import requests as curl_requests
+
+    def fetch_schedule():
+        response = curl_requests.get(
+            "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json",
+            proxy=args.proxy or None,
+            impersonate="chrome131",
+            headers={"Accept": "application/json", "Referer": "https://www.nba.com/"},
+            timeout=args.timeout,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    payload = endpoint_with_retry(
+        fetch_schedule, retries=args.retries, pause=args.sleep, label="official schedule",
+    )
+    return schedule_season_state(payload, args.season, checked_at)
+
+
+def validate_player_rows(player_stats: list, players: list, season_state: dict[str, Any] | None) -> None:
+    if players:
+        return
+    if player_stats:
+        raise RuntimeError("NBA player stats returned rows but none could be normalized")
+    if not season_state or season_state["phase"] != "preseason":
+        raise RuntimeError("NBA player stats returned zero usable rows without verified pre-season evidence")
+
+
 def configure_nba_http() -> None:
     """Use a browser TLS fingerprint for NBA endpoints that reject generic clients."""
     from curl_cffi import requests as curl_requests
@@ -272,6 +328,12 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
 
     generated_at = now_iso()
     warnings: list[str] = []
+    season_state = None
+    try:
+        season_state = fetch_season_state(args, generated_at)
+    except Exception as error:
+        warnings.append(f"season schedule unavailable: {error}")
+    preseason = bool(season_state and season_state["phase"] == "preseason")
 
     team_rows = static_teams.get_teams()
     if not team_rows:
@@ -281,7 +343,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
 
     scoreboard_warning = ""
     try:
-        standings = frame_rows(call_with_retry(
+        standings = [] if preseason else frame_rows(call_with_retry(
             leaguestandings.LeagueStandings,
             season=args.season,
             season_type="Regular Season",
@@ -293,6 +355,9 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
         ))
     except Exception as error:
         raise RuntimeError(str(error)) from error
+
+    if not preseason and not standings:
+        raise RuntimeError("NBA standings returned zero rows")
 
     record_by_team: dict[str, dict[str, Any]] = {}
     for row in standings:
@@ -337,8 +402,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
             "age": value(row, "AGE"),
             "stats": player_stat_line(row),
         })
-    if not players:
-        raise RuntimeError("NBA player stats returned zero usable rows")
+    validate_player_rows(player_stats, players, season_state)
 
     teams = []
     for team in team_rows:
@@ -407,9 +471,9 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
             "count": len(games),
         },
         "teams": {"status": "ok", "updatedAt": generated_at, "count": len(teams)},
-        "players": {"status": "ok", "updatedAt": generated_at, "count": len(players)},
+        "players": {"status": "ok" if players else "empty", "updatedAt": generated_at, "count": len(players)},
         "leaders": {
-            "status": "ok",
+            "status": "ok" if players else "empty",
             "updatedAt": generated_at,
             "count": sum(len(rows) for rows in leaders.values()),
         },
@@ -422,12 +486,16 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
         data_health["games"]["warning"] = scoreboard_warning
     if featured_warning:
         data_health["featuredPlayer"]["warning"] = featured_warning
+    if preseason and not players:
+        for key in ("players", "leaders"):
+            data_health[key]["warning"] = "本赛季常规赛尚未开始，暂无常规赛统计；往季数据可在历史赛季查看。"
     return {
         "manifest": {
             **common,
             "source": "NBA.com via nba_api",
             "sourceStatus": "partial" if warnings else "official",
             "season": args.season,
+            "seasonState": season_state,
             "timezone": "UTC",
             "warnings": warnings,
             "dataHealth": data_health,

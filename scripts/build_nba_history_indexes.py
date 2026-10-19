@@ -8,6 +8,7 @@ import json
 import shutil
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +45,10 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
 
 def merge_current_season(data_root: Path, season: str) -> None:
     manifest = read_json(data_root / "manifest.json")
+    if season != manifest.get("season"):
+        raise RuntimeError("history season does not match current snapshot season")
+    if (manifest.get("seasonState") or {}).get("phase") == "preseason":
+        return
     generated_at = manifest.get("generatedAt")
     data_version = manifest.get("dataVersion")
     players = read_json(data_root / "players" / "index.json")
@@ -262,6 +267,38 @@ def update_manifest(data_root: Path, history_updated_at: str = "") -> None:
     write_json(path, manifest)
 
 
+def validate_current_counts(manifest: dict[str, Any], player_count: int, leader_count: int) -> None:
+    state = manifest.get("seasonState")
+    if state:
+        if (
+            state.get("season") != manifest.get("season")
+            or not isinstance(state.get("regularSeasonGames"), int)
+            or state["regularSeasonGames"] <= 0
+        ):
+            raise RuntimeError("invalid regular-season schedule evidence")
+        opening = datetime.fromisoformat(state["regularSeasonStartsAt"].replace("Z", "+00:00"))
+        generated = datetime.fromisoformat(manifest["generatedAt"].replace("Z", "+00:00"))
+        if opening.tzinfo is None or generated.tzinfo is None:
+            raise RuntimeError("season schedule timestamps must include a timezone")
+        if state.get("phase") == "preseason" and generated < opening:
+            if player_count or leader_count:
+                raise RuntimeError("pre-season snapshot contains regular-season statistics")
+            for key in ("players", "leaders"):
+                if (manifest.get("dataHealth", {}).get(key) or {}).get("status") != "empty":
+                    raise RuntimeError("pre-season statistics must be marked empty")
+            return
+        if state.get("phase") != "regularSeason" or generated < opening:
+            raise RuntimeError("season phase does not match opening time")
+        if (generated - opening).days < 14:
+            if player_count < 1 or leader_count != 3 * min(10, player_count):
+                raise RuntimeError("early-season statistics are empty or incomplete")
+            return
+    if player_count < 300:
+        raise RuntimeError("current player snapshot is unexpectedly small")
+    if leader_count < 15:
+        raise RuntimeError("current leaderboard snapshot is unexpectedly small")
+
+
 def validate(data_root: Path) -> tuple[int, int]:
     manifest = read_json(data_root / "manifest.json")
     if manifest.get("sourceStatus") not in {"official", "partial"}:
@@ -273,13 +310,10 @@ def validate(data_root: Path) -> tuple[int, int]:
     current_teams = read_json(data_root / "teams" / "index.json").get("teams", [])
     current_games = read_json(data_root / "games" / "today.json").get("games", [])
     current_leaders = read_json(data_root / "leaders" / "index.json").get("leaders", {})
-    if len(current_players) < 300:
-        raise RuntimeError("current player snapshot is unexpectedly small")
     if len(current_teams) != 30:
         raise RuntimeError("current team snapshot must contain 30 teams")
     leader_count = sum(len(rows) for rows in current_leaders.values())
-    if leader_count < 15:
-        raise RuntimeError("current leaderboard snapshot is unexpectedly small")
+    validate_current_counts(manifest, len(current_players), leader_count)
 
     health = manifest.get("dataHealth") or {}
     health_counts = {
@@ -355,7 +389,8 @@ def main() -> int:
                 if not season:
                     raise RuntimeError("current season is required")
                 merge_current_season(data_root, season)
-                history_updated_at = str(manifest.get("generatedAt") or "")
+                if (manifest.get("seasonState") or {}).get("phase") != "preseason":
+                    history_updated_at = str(manifest.get("generatedAt") or "")
             normalize_featured_player(data_root)
             replace_generated_directory(data_root, Path("history/player-careers"), build_player_payloads(data_root))
             replace_generated_directory(data_root, Path("history/team-careers"), build_team_payloads(data_root))
