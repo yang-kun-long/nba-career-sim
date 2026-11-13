@@ -17,6 +17,7 @@ from typing import Any
 
 import yaml
 from curl_cffi import requests as curl_requests
+from refresh_nba_data import current_nba_season
 
 
 NBA_PROBE_URL = "https://stats.nba.com/stats/commonteamyears?LeagueID=00"
@@ -40,6 +41,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--subscription-env", default="CLASH_SUBSCRIPTION_URL")
     parser.add_argument("--timeout", type=int, default=15)
     parser.add_argument("--workers", type=int, default=16)
+    parser.add_argument("--season", default="")
+    parser.add_argument("--attempt", type=int, default=1)
     return parser.parse_args()
 
 
@@ -82,27 +85,64 @@ def wait_for_controller(process: subprocess.Popen[Any], timeout: int = 30) -> No
     raise RuntimeError("Mihomo controller did not become ready")
 
 
-def probe_candidate(item: tuple[int, int], timeout: int) -> tuple[int, float] | None:
+def probe_urls(season: str) -> list[str]:
+    from nba_api.stats.endpoints import leaguedashplayerstats, leaguestandings
+
+    endpoints = [
+        leaguestandings.LeagueStandings(season=season, season_type="Regular Season", get_request=False),
+        leaguedashplayerstats.LeagueDashPlayerStats(
+            season=season, per_mode_detailed="PerGame",
+            season_type_all_star="Regular Season", get_request=False,
+        ),
+    ]
+    return [f"https://stats.nba.com/stats/{endpoint.endpoint}?{urllib.parse.urlencode(endpoint.parameters)}"
+            for endpoint in endpoints]
+
+
+def valid_stats_payload(payload: Any) -> bool:
+    if not isinstance(payload, dict):
+        return False
+    result_sets = payload.get("resultSets", payload.get("resultSet", []))
+    if isinstance(result_sets, dict):
+        result_sets = [result_sets]
+    return isinstance(result_sets, list) and bool(result_sets) and all(
+        isinstance(result, dict) and isinstance(result.get("headers"), list)
+        and bool(result["headers"]) and isinstance(result.get("rowSet"), list)
+        for result in result_sets
+    )
+
+
+def probe_candidate(item: tuple[int, int], timeout: int, urls: list[str] | None = None) -> tuple[int, float] | None:
     index, port = item
     started = time.monotonic()
+    endpoint_name = "unknown"
+    response = None
     try:
-        response = curl_requests.get(
-            NBA_PROBE_URL,
-            proxy=f"http://127.0.0.1:{port}",
-            impersonate="chrome131",
-            headers={
-                "Accept": "application/json, text/plain, */*",
-                "Referer": "https://www.nba.com/",
-            },
-            timeout=timeout,
-        )
-        response.raise_for_status()
-        payload = response.json()
-        result_sets = payload.get("resultSets", [])
-        if any(isinstance(result_set, dict) and result_set.get("rowSet") for result_set in result_sets):
-            return index, time.monotonic() - started
-    except Exception:
-        pass
+        for url in urls or [NBA_PROBE_URL]:
+            endpoint_name = url.split("?")[0].rsplit("/", 1)[-1]
+            response = None
+            response = curl_requests.get(
+                url,
+                proxy=f"http://127.0.0.1:{port}",
+                impersonate="chrome131",
+                headers={
+                    "Accept": "application/json, text/plain, */*",
+                    "Referer": "https://www.nba.com/",
+                },
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            payload = response.json()
+            if not valid_stats_payload(payload):
+                print(f"Candidate {index + 1}: {endpoint_name} invalid Stats schema", flush=True)
+                return None
+        return index, time.monotonic() - started
+    except Exception as error:
+        # Never print exception text: transport errors may contain subscription details.
+        status = getattr(response, "status_code", None)
+        code = getattr(error, "code", None)
+        print(f"Candidate {index + 1}: {endpoint_name} probe failed "
+              f"({type(error).__name__}, HTTP {status}, transport code {code})", flush=True)
     return None
 
 
@@ -166,11 +206,13 @@ def main() -> int:
         try:
             wait_for_controller(process)
             candidates = [(index, 10000 + index) for index in range(len(proxies))]
+            urls = probe_urls(args.season or current_nba_season())
             with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
-                results = [result for result in pool.map(lambda item: probe_candidate(item, args.timeout), candidates) if result]
+                results = [result for result in pool.map(lambda item: probe_candidate(item, args.timeout, urls), candidates) if result]
             if not results:
                 raise RuntimeError(f"none of {len(proxies)} proxy candidates returned valid NBA Stats JSON")
-            selected_index, elapsed = min(results, key=lambda result: result[1])
+            results.sort(key=lambda result: result[1])
+            selected_index, elapsed = results[(args.attempt - 1) % len(results)]
             select_proxy(str(proxies[selected_index]["name"]))
             (args.workdir / "mihomo.pid").write_text(str(process.pid), encoding="ascii")
             print(

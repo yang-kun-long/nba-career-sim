@@ -53,17 +53,19 @@ jobs:
           gzip -dc /tmp/mihomo.gz > /tmp/mihomo
           chmod +x /tmp/mihomo
 
-      - name: Start NBA proxy and select a compatible node
+      - name: Fetch, normalize, and validate NBA data
         env:
           CLASH_SUBSCRIPTION_URL: ${{ secrets.CLASH_SUBSCRIPTION_URL }}
-        run: python scripts/start_nba_proxy.py --mihomo /tmp/mihomo --workdir /tmp/nba-mihomo
-
-      - name: Fetch, normalize, and validate NBA data
         run: |
           set -o pipefail
           for attempt in 1 2 3; do
             echo "NBA data refresh attempt ${attempt}/3"
-            if python scripts/refresh_nba_data.py --output public/data --season "$NBA_SEASON" --proxy "$NBA_PROXY_URL"; then
+            if [ -f /tmp/nba-mihomo/mihomo.pid ]; then
+              kill "$(cat /tmp/nba-mihomo/mihomo.pid)" || true
+              rm -f /tmp/nba-mihomo/mihomo.pid
+            fi
+            if python scripts/start_nba_proxy.py --mihomo /tmp/mihomo --workdir /tmp/nba-mihomo --season "$NBA_SEASON" --attempt "$attempt" \
+              && python scripts/refresh_nba_data.py --output public/data --season "$NBA_SEASON" --proxy "$NBA_PROXY_URL"; then
               exit 0
             fi
             if [ "$attempt" -lt 3 ]; then
